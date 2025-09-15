@@ -314,6 +314,39 @@
       .header{ padding: 28px 22px; }
       .form-container{ padding: 22px; }
     }
+    /* Patch: ensure email input matches other inputs */
+input[type="email"]{
+  width: 100%;
+  appearance: none;
+  background: var(--card);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 1rem;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast), transform var(--t-fast);
+}
+
+/* Patch: tiny loading spinner shown inside the submit button */
+.loading-spinner{
+  display:inline-block;
+  width: 14px; height: 14px;
+  margin-left: 8px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  vertical-align: -2px;
+}
+
+/* Patch: confirmation action row spacing */
+.confirm-actions{
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
   </style>
 </head>
 <body>
