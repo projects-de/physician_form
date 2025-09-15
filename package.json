@@ -1,0 +1,8 @@
+{
+  "name": "stillwaters-booking",
+  "version": "1.0.0",
+  "description": "Still Waters Counseling Booking System",
+  "scripts": {
+    "build": "echo 'No build needed for static HTML'"
+  }
+}

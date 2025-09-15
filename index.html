@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Still Waters - Schedule Physician Appointment</title>
+  <style>
+    /* --- Reset & Tokens --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root{
+      /* Palette */
+      --primary: #4f46e5;
+      --primary-700:#4338ca;
+      --secondary:#06b6d4;
+      --accent: #38bdf8;
+      --success: #10b981;
+      --danger: #ef4444;
+
+      /* Neutrals */
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --text: #0f172a;
+      --text-soft:#334155;
+      --border: #e5e7eb;
+
+      /* Elevation */
+      --shadow: 0 8px 24px rgba(2, 6, 23, .08);
+      --shadow-lg: 0 18px 40px rgba(2, 6, 23, .12);
+
+      /* Focus ring */
+      --ring: rgba(79, 70, 229, .45);
+      --ring-strong: rgba(6, 182, 212, .45);
+
+      /* Radii */
+      --r-lg: 20px;
+      --r-xl: 24px;
+      --r-full: 9999px;
+
+      /* Transitions */
+      --t-fast: .15s ease;
+      --t-med: .25s ease;
+
+      /* Slot sizing */
+      --chip-min: 120px;
+    }
+
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg: #0b1220;
+        --card: #0f172a;
+        --text: #e5e7eb;
+        --text-soft:#cbd5e1;
+        --border: #1f2937;
+        --shadow: 0 8px 24px rgba(0,0,0,.5);
+        --shadow-lg: 0 18px 50px rgba(0,0,0,.55);
+        --ring: rgba(56, 189, 248, .5);
+        --ring-strong: rgba(99, 102, 241, .55);
+      }
+    }
+
+    /* --- Page --- */
+    body{
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(79,70,229,.14), transparent 60%),
+        radial-gradient(800px 500px at 90% 10%, rgba(6,182,212,.16), transparent 55%),
+        linear-gradient(180deg, var(--bg), var(--bg));
+    }
+
+    .container{
+      width: 100%;
+      max-width: 800px;
+      background: linear-gradient(0deg, rgba(255,255,255,.6), rgba(255,255,255,.6)), var(--card);
+      backdrop-filter: saturate(120%) blur(6px);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      animation: slideIn .4s ease-out both;
+    }
+
+    @keyframes slideIn{ from{ opacity:0; transform: translateY(18px);} to{ opacity:1; transform: translateY(0);} }
+
+    /* --- Header --- */
+    .header{
+      padding: 40px 32px;
+      color: #fff;
+      background:
+        radial-gradient(800px 200px at 20% -20%, rgba(56,189,248,.35), transparent 60%),
+        linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+    .header h1{
+      font-size: clamp(1.8rem, 2.6vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .header p{
+      font-size: 1.05rem;
+      opacity: .95;
+    }
+
+    /* --- Form layout --- */
+    .form-container{ padding: 32px; }
+    .form-section{ margin-bottom: 28px; animation: fadeIn .35s ease-out both; }
+    @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+
+    .form-section h2{
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .form-group{ margin-bottom: 16px; }
+    .form-row{ display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+    label{
+      display: block;
+      color: var(--text-soft);
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: .95rem;
+    }
+    .required{ color: var(--danger); }
+
+    /* --- Inputs --- */
+    input[type="text"],
+    input[type="tel"],
+    select{
+      width: 100%;
+      appearance: none;
+      background: var(--card);
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast), transform var(--t-fast);
+    }
+
+    input:hover, select:hover{
+      border-color: color-mix(in oklab, var(--primary) 25%, var(--border));
+    }
+    input:focus, select:focus{
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--ring);
+    }
+
+    /* --- Choice groups --- */
+    .radio-group{ display:flex; gap:14px; flex-wrap:wrap; margin-top: 8px; }
+    .radio-option{
+      display:flex; align-items:center; gap:10px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: transform var(--t-fast), box-shadow var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+      user-select: none;
+    }
+    .radio-option:hover{ transform: translateY(-1px); border-color: var(--primary); box-shadow: var(--shadow); }
+    .radio-option.selected{
+      border-color: var(--primary);
+      background: linear-gradient(0deg, rgba(79,70,229,.06), rgba(6,182,212,.06));
+      box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--primary) 60%, transparent);
+    }
+    .radio-option input[type="radio"]{ width: 18px; height: 18px; }
+
+    /* --- Slots --- */
+    .time-slots{ display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 14px; }
+    .time-slot{
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .time-slot .date{ font-weight: 800; font-size: 1rem; color: var(--text); margin-bottom: 6px; }
+    .time-slot .range{ color: var(--muted); font-size: .95rem; margin-bottom: 12px; }
+
+    .slot-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--chip-min), 1fr)); gap: 10px; }
+    .slot-chip{
+      padding: 10px 12px;
+      text-align: center;
+      border-radius: var(--r-full);
+      background: linear-gradient(180deg, #ffffff, #fafafa);
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      font-weight: 600;
+      font-size: .95rem;
+      cursor: pointer;
+      transition: transform var(--t-fast), box-shadow var(--t-fast), border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
+    }
+    .slot-chip:hover{ transform: translateY(-1px); border-color: var(--primary); box-shadow: var(--shadow); }
+    .slot-chip:focus-visible{ outline: 0; box-shadow: 0 0 0 4px var(--ring-strong); }
+    .slot-chip.selected{
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 8px 26px rgba(79,70,229,.35);
+    }
+
+    .hidden{ display:none !important; }
+
+    /* --- Buttons --- */
+    .button-group{ display:flex; gap: 12px; justify-content:center; margin-top: 28px; flex-wrap: wrap; }
+    .btn{
+      border: 0; border-radius: 12px;
+      padding: 14px 28px;
+      font-size: 1.05rem; font-weight: 800; letter-spacing: .02em;
+      cursor: pointer;
+      transition: transform var(--t-med), box-shadow var(--t-med), opacity var(--t-fast);
+    }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; }
+
+    .btn-primary{
+      color:#fff;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      box-shadow: 0 10px 28px rgba(79,70,229,.35);
+    }
+    .btn-primary:hover:not(:disabled){ transform: translateY(-2px); box-shadow: 0 16px 40px rgba(79,70,229,.45); }
+
+    .btn-secondary{
+      color: var(--primary);
+      background: linear-gradient(180deg, #ffffff, #fafafa);
+      border: 1.5px solid color-mix(in oklab, var(--primary) 22%, var(--border));
+    }
+    .btn-secondary:hover{ transform: translateY(-2px); box-shadow: var(--shadow); }
+
+    /* --- Alerts --- */
+    .success-message,
+    .error-message{
+      display:none;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-weight: 700;
+      margin: 14px 0;
+      box-shadow: var(--shadow);
+      animation: slideDown .35s ease-out both;
+    }
+    @keyframes slideDown{ from{opacity:0; transform: translateY(-6px)} to{opacity:1; transform: translateY(0)} }
+
+    .success-message{ background: color-mix(in oklab, var(--success) 18%, #ecfdf5); color: #065f46; border: 1.5px solid color-mix(in oklab, var(--success) 40%, #ffffff); }
+    .error-message{ background: color-mix(in oklab, var(--danger) 18%, #fef2f2); color: #7f1d1d; border: 1.5px solid color-mix(in oklab, var(--danger) 40%, #ffffff); }
+
+    /* --- Confirmation card --- */
+    .confirm-card{
+      display:none;
+      background: color-mix(in oklab, var(--success) 10%, #fff);
+      border: 1.5px solid color-mix(in oklab, var(--success) 30%, #fff);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin: 16px 0;
+    }
+    .confirm-card.visible{ display:block; }
+    .confirm-card h3{ font-size:1.15rem; font-weight:800; margin-bottom:8px; color:#065f46; }
+    .confirm-row{ display:flex; gap:10px; align-items:flex-start; margin:6px 0; color:#064e3b; }
+    .confirm-row b{ min-width:130px; display:inline-block; color:#065f46; }
+    .confirm-notice{ 
+      margin-top: 12px; 
+      padding-top: 12px; 
+      border-top: 1px solid color-mix(in oklab, var(--success) 20%, #fff);
+      font-size: .95rem;
+      color: var(--text-soft);
+    }
+
+    /* --- Loading overlay --- */
+    .loading-overlay{ position: fixed; inset:0; background: rgba(2,6,23,.5); display:none; place-items:center; z-index: 9999; }
+    .loading-overlay.active{ display:grid; }
+    .loading-content{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      text-align:center;
+      box-shadow: var(--shadow-lg);
+      color: var(--text);
+    }
+    .loading-content .spinner{
+      width: 52px; height:52px; border: 5px solid var(--border);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 1s linear infinite; margin: 0 auto 14px;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg); } }
+
+    .info-notice{
+      background: color-mix(in oklab, var(--primary) 8%, #ffffff);
+      border: 1px solid color-mix(in oklab, var(--primary) 25%, var(--border));
+      color: var(--text);
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: .95rem;
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 768px){
+      .form-row{ grid-template-columns: 1fr; }
+      .button-group{ flex-direction: column; }
+      .btn{ width: 100%; }
+      .slot-grid{ grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+      .header{ padding: 28px 22px; }
+      .form-container{ padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Still Waters Professional Counseling</h1>
+      <p>Schedule Your Physician Appointment</p>
+    </div>
+
+    <form id="physicianForm" class="form-container" novalidate>
+      <div id="successMessage" class="success-message">Appointment confirmed! You'll receive a confirmation shortly.</div>
+      <div id="errorMessage" class="error-message">There was an error booking your appointment. Please try again.</div>
+      
+      <div id="confirmationCard" class="confirm-card" aria-live="polite">
+        <h3>Appointment Confirmed! ✓</h3>
+        <div class="confirm-row"><b>Date & Time:</b><span id="confWhen">—</span></div>
+        <div class="confirm-row"><b>Location:</b><span>In-office visit</span></div>
+        <div class="confirm-row"><b>Address:</b><span id="confAddress">—</span></div>
+        <div class="confirm-row"><b>Instructions:</b><span>Please check in at the front desk when you arrive</span></div>
+        <div class="confirm-notice">
+          <strong>Reminders:</strong> You'll receive confirmation and reminder messages via email/SMS 48 and 24 hours before your appointment.
+          <br><br>
+          <strong>Need to change your appointment?</strong> Please call our office or reply to your confirmation message as soon as possible if you need to cancel or reschedule.
+        </div>
+      </div>
+
+      <div class="info-notice">
+        <strong>Note:</strong> This appointment is for an in-office physician visit. No telehealth option is available. Your appointment duration will be determined based on whether this is your first visit or a follow-up.
+      </div>
+
+      <div class="form-section">
+        <h2>Visit Type</h2>
+        <div class="form-group">
+          <label>Is this your first time seeing a physician at Still Waters Professional Counseling? <span class="required">*</span></label>
+          <div class="radio-group">
+            <div class="radio-option" data-firsttime="yes">
+              <input type="radio" id="firstTimeYes" name="firstTime" value="yes" required />
+              <label for="firstTimeYes">Yes (First Visit - 1 hour)</label>
+            </div>
+            <div class="radio-option" data-firsttime="no">
+              <input type="radio" id="firstTimeNo" name="firstTime" value="no" required />
+              <label for="firstTimeNo">No (Follow-up - 30 minutes)</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Person Receiving Services</h2>
+        <div class="form-group">
+          <label>Is the person receiving services over 18? <span class="required">*</span></label>
+          <div class="radio-group">
+            <div class="radio-option" data-over18="yes">
+              <input type="radio" id="over18Yes" name="over18" value="yes" required />
+              <label for="over18Yes">Yes</label>
+            </div>
+            <div class="radio-option" data-over18="no">
+              <input type="radio" id="over18No" name="over18" value="no" required />
+              <label for="over18No">No</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="clientName">Client Name <span class="required">*</span></label>
+            <input type="text" id="clientName" name="clientName" required placeholder="Full Name" />
+          </div>
+          <div class="form-group">
+            <label for="clientPhone">Client Phone <span class="required">*</span></label>
+            <input type="tel" id="clientPhone" name="clientPhone" required placeholder="123-456-7890" />
+          </div>
+        </div>
+      </div>
+
+      <div id="guardianInfo" class="form-section hidden">
+        <h2>Guardian Information</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="guardianName">Guardian Name <span class="required">*</span></label>
+            <input type="text" id="guardianName" name="guardianName" placeholder="Full Name" />
+          </div>
+          <div class="form-group">
+            <label for="guardianPhone">Guardian Phone <span class="required">*</span></label>
+            <input type="tel" id="guardianPhone" name="guardianPhone" placeholder="123-456-7890" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Select Appointment Time</h2>
+        <div class="form-group">
+          <button type="button" class="btn btn-secondary" id="loadSlotsBtn">Load Available Times</button>
+        </div>
+        <div id="timeSlots" class="time-slots"></div>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn btn-secondary" id="clearFormBtn">Clear Form</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Confirm Appointment</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p id="overlayMessage">Processing your request...</p>
+    </div>
+  </div>
+
+  <script>
+    // ===== CONFIG =====
+    const CONFIG = {
+      GET_SLOTS_URL: 'https://sw-function-b6c4h9cnexhbh4g3.canadacentral-01.azurewebsites.net/api/Calender',
+      BOOK_APPOINTMENT_URL: 'https://sw-function-b6c4h9cnexhbh4g3.canadacentral-01.azurewebsites.net/api/CreateEvent',
+      GET_SLOTS_KEY: '',
+      BOOK_APPOINTMENT_KEY: '',
+      TIMEZONE: 'Central Standard Time',
+      SLOT_MINUTES: 15,
+      CLINIC_ADDRESS: 'Still Waters Professional Counseling, 123 Main St, Suite 100, City, State 12345', // Update with actual address
+      CLINIC_PHONE: '(555) 123-4567' // Update with actual phone number
+    };
+
+    // Global variables
+    let selectedSlot = null;
+    let availableSlots = [];
+    let appointmentDuration = 30; // default to follow-up
+
+    function withKey(url, key) {
+      if (!key) return url;
+      try { 
+        const u = new URL(url); 
+        u.searchParams.set('code', key); 
+        return u.toString(); 
+      }
+      catch(e) { 
+        const sep = url.indexOf('?')>=0 ? '&' : '?'; 
+        return url + sep + 'code=' + encodeURIComponent(key); 
+      }
+    }
+
+    // Pre-fill form from URL parameters
+    function prefillFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      
+      if (params.has('name')) {
+        document.getElementById('clientName').value = params.get('name');
+      }
+      if (params.has('phone')) {
+        document.getElementById('clientPhone').value = params.get('phone');
+      }
+      if (params.has('guardianName')) {
+        document.getElementById('guardianName').value = params.get('guardianName');
+      }
+      if (params.has('guardianPhone')) {
+        document.getElementById('guardianPhone').value = params.get('guardianPhone');
+      }
+      if (params.has('over18')) {
+        const isOver18 = params.get('over18').toLowerCase() === 'yes';
+        const radio = document.getElementById(isOver18 ? 'over18Yes' : 'over18No');
+        if (radio) {
+          radio.checked = true;
+          // Trigger the UI update
+          const card = document.querySelector(`.radio-option[data-over18="${isOver18 ? 'yes' : 'no'}"]`);
+          if (card) card.click();
+        }
+      }
+      if (params.has('firstTime')) {
+        const isFirstTime = params.get('firstTime').toLowerCase() === 'yes';
+        const radio = document.getElementById(isFirstTime ? 'firstTimeYes' : 'firstTimeNo');
+        if (radio) {
+          radio.checked = true;
+          // Trigger the UI update
+          const card = document.querySelector(`.radio-option[data-firsttime="${isFirstTime ? 'yes' : 'no'}"]`);
+          if (card) card.click();
+        }
+      }
+    }
+
+    // Initialize event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Pre-fill form if URL parameters exist
+      prefillFromURL();
+      
+      // First time visit selection
+      document.querySelectorAll('.radio-option[data-firsttime]').forEach(function(card) {
+        card.addEventListener('click', function() {
+          const val = this.getAttribute('data-firsttime');
+          const radio = document.getElementById(val === 'yes' ? 'firstTimeYes' : 'firstTimeNo');
+          if (radio) radio.checked = true;
+
+          document.querySelectorAll('.radio-option[data-firsttime]').forEach(c => c.classList.remove('selected'));
+          this.classList.add('selected');
+
+          // Set appointment duration based on visit type
+          appointmentDuration = (val === 'yes') ? 60 : 30;
+          
+          // Clear any existing slots when visit type changes
+          document.getElementById('timeSlots').innerHTML = '';
+          selectedSlot = null;
+        });
+      });
+
+      // Over 18 selection
+      document.querySelectorAll('.radio-option[data-over18]').forEach(function(card) {
+        card.addEventListener('click', function() {
+          const val = this.getAttribute('data-over18');
+          const radio = document.getElementById(val === 'yes' ? 'over18Yes' : 'over18No');
+          if (radio) radio.checked = true;
+
+          document.querySelectorAll('.radio-option[data-over18]').forEach(c => c.classList.remove('selected'));
+          this.classList.add('selected');
+
+          const guardianSection = document.getElementById('guardianInfo');
+          if (val === 'no') {
+            guardianSection.classList.remove('hidden');
+            document.getElementById('guardianName').required = true;
+            document.getElementById('guardianPhone').required = true;
+          } else {
+            guardianSection.classList.add('hidden');
+            document.getElementById('guardianName').required = false;
+            document.getElementById('guardianPhone').required = false;
+          }
+        });
+      });
+
+      // Phone formatting
+      document.getElementById('clientPhone').addEventListener('input', formatPhone);
+      document.getElementById('guardianPhone').addEventListener('input', formatPhone);
+
+      // Button listeners
+      document.getElementById('loadSlotsBtn').addEventListener('click', loadAvailableSlots);
+      document.getElementById('clearFormBtn').addEventListener('click', clearForm);
+      document.getElementById('physicianForm').addEventListener('submit', handleSubmit);
+    });
+
+    function formatPhone(e) {
+      let v = e.target.value.replace(/\D/g,'').slice(0,10);
+      if (v.length>6) e.target.value = v.slice(0,3)+'-'+v.slice(3,6)+'-'+v.slice(6);
+      else if (v.length>3) e.target.value = v.slice(0,3)+'-'+v.slice(3);
+      else e.target.value = v;
+    }
+
+    function parseSlotString(slotStr) {
+      const parts = slotStr.split(', ');
+      if (parts.length < 2) throw new Error('Unexpected slot format: ' + slotStr);
+
+      const datePart = parts[0];
+      const timePart = parts[1];
+
+      const [dayStr, monStr, yearStr] = datePart.split(' ');
+      const day = parseInt(dayStr, 10);
+      const year = parseInt(yearStr, 10);
+
+      const monthMap = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+      const monthNum = monthMap[monStr];
+      if (!monthNum) throw new Error('Unknown month in slot: ' + slotStr);
+
+      const [startStr, endStr] = timePart.split(' - ');
+      const start24 = convertTo24Hour(startStr);
+      const end24 = convertTo24Hour(endStr);
+
+      const startMin = hmToMinutes(start24.hours, start24.minutes);
+      const endMin = hmToMinutes(end24.hours, end24.minutes);
+
+      const mm = String(monthNum).padStart(2, '0');
+      const dd = String(day).padStart(2, '0');
+
+      return {
+        y: year, m: monthNum, d: day,
+        dateStr: datePart,
+        startTimeStr: startStr,
+        endTimeStr: endStr,
+        startMin, endMin,
+        dateKey: `${year}-${mm}-${dd}`
+      };
+    }
+
+    function convertTo24Hour(timeStr) {
+      const t = timeStr.trim().split(' ');
+      const hm = t[0].split(':');
+      let h = parseInt(hm[0], 10);
+      const m = parseInt(hm[1], 10);
+      const p = t[1];
+      if (p === 'PM' && h !== 12) h += 12;
+      if (p === 'AM' && h === 12) h = 0;
+      return {hours: h, minutes: m};
+    }
+
+    function hmToMinutes(h, m) { return h * 60 + m; }
+    function minutesToHM(total) { return {hour: Math.floor(total/60), minute: total % 60}; }
+
+    function t12fmt(h, m) {
+      const p2 = n => (n < 10 ? '0' : '') + n;
+      const ap = h >= 12 ? 'PM' : 'AM';
+      const hh = h % 12 === 0 ? 12 : (h % 12);
+      return hh + ':' + p2(m) + ' ' + ap;
+    }
+
+    function groupByDate(slots) {
+      const map = {};
+      slots.forEach(s => {
+        const key = s.dateKey;
+        if (!map[key]) {
+          map[key] = { y: s.y, m: s.m, d: s.d, dateStr: s.dateStr, windows: [] };
+        }
+        map[key].windows.push({
+          startMin: s.startMin,
+          endMin: s.endMin,
+          startStr: s.startTimeStr,
+          endStr: s.endTimeStr
+        });
+      });
+      return map;
+    }
+
+    function localDow(y, m, d) {
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      return days[new Date(y, m-1, d).getDay()];
+    }
+
+    async function loadAvailableSlots() {
+      // Check if visit type is selected
+      const visitType = document.querySelector('input[name="firstTime"]:checked');
+      if (!visitType) {
+        showError('Please select whether this is your first visit or a follow-up');
+        return;
+      }
+
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.classList.add('active');
+      
+      const url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
+      
+      try {
+        const resp = await fetch(url, { method: 'GET', headers: {'Accept': 'application/json'} });
+        const text = await resp.text();
+        console.log('[GET /Calender]', resp.status, text);
+        
+        if (!resp.ok) throw new Error('Failed to load slots (' + resp.status + ')');
+        
+        const data = text ? JSON.parse(text) : {};
+        const list = Array.isArray(data) ? data
+                  : (Array.isArray(data.free_slots) ? data.free_slots
+                  : (Array.isArray(data.freeSlots) ? data.freeSlots
+                  : (Array.isArray(data.slots) ? data.slots : [])));
+        
+        availableSlots = list.map(parseSlotString);
+        displaySlots(availableSlots);
+      } catch(e) {
+        console.error(e);
+        showError('Failed to load available appointment times. Please try again.');
+      } finally {
+        overlay.classList.remove('active');
+      }
+    }
+
+    function displaySlots(slots) {
+      const container = document.getElementById('timeSlots');
+      container.innerHTML = '';
+      selectedSlot = null;
+
+      if (!slots || !slots.length) {
+        container.innerHTML = '<p>No available appointments at this time. Please call the office.</p>';
+        return;
+      }
+
+      const byDate = groupByDate(slots);
+      const keys = Object.keys(byDate).sort();
+
+      keys.forEach(key => {
+        const dayData = byDate[key];
+
+        const card = document.createElement('div');
+        card.className = 'time-slot';
+
+        const header = document.createElement('div');
+        header.className = 'date';
+        header.textContent = localDow(dayData.y, dayData.m, dayData.d) + ', ' + dayData.dateStr;
+
+        const grid = document.createElement('div');
+        grid.className = 'slot-grid';
+
+        const emittedStarts = new Set();
+
+        dayData.windows.forEach(w => {
+          // Generate 15-minute slots within each window
+          for (let m = w.startMin; m + appointmentDuration <= w.endMin; m += CONFIG.SLOT_MINUTES) {
+            if (emittedStarts.has(m)) continue;
+            emittedStarts.add(m);
+
+            const startHM = minutesToHM(m);
+
+            const chipEl = document.createElement('div');
+            chipEl.className = 'slot-chip';
+            chipEl.setAttribute('role', 'button');
+            chipEl.setAttribute('tabindex', '0');
+            chipEl.textContent = t12fmt(startHM.hour, startHM.minute);
+
+            chipEl.addEventListener('click', () => {
+              document.querySelectorAll('.slot-chip').forEach(el => el.classList.remove('selected'));
+              chipEl.classList.add('selected');
+              selectedSlot = {
+                y: dayData.y, m: dayData.m, d: dayData.d,
+                dateStr: dayData.dateStr,
+                start: { hour: startHM.hour, minute: startHM.minute },
+                durationMinutes: appointmentDuration,
+                display: chipEl.textContent
+              };
+            });
+
+            chipEl.addEventListener('keydown', (ev) => {
+              if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); chipEl.click(); }
+            });
+
+            grid.appendChild(chipEl);
+          }
+        });
+
+        if (grid.children.length === 0) {
+          const emptyMsg = document.createElement('div');
+          emptyMsg.style.color = 'var(--muted)';
+          emptyMsg.textContent = 'No available appointments in this time window.';
+          grid.appendChild(emptyMsg);
+        }
+
+        card.appendChild(header);
+        card.appendChild(grid);
+        container.appendChild(card);
+      });
+    }
+
+    function addMinutesToHM(h, m, delta) {
+      const total = h * 60 + m + delta;
+      return { hour: Math.floor(total/60), minute: total % 60 };
+    }
+
+    function ymdhms(y, m, d, h, mi) { 
+      const p2 = n => (n < 10 ? '0' : '') + n;
+      return y + '-' + p2(m) + '-' + p2(d) + 'T' + p2(h) + ':' + p2(mi) + ':00'; 
+    }
+
+    function humanTimeDisplayYMD(y, m, d, start, end) {
+      const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const p2 = n => (n < 10 ? '0' : '') + n;
+      function t12fmt(h, mn) {
+        const ap = h >= 12 ? 'PM' : 'AM';
+        const hh = h % 12 === 0 ? 12 : h % 12;
+        return hh + ':' + p2(mn) + ' ' + ap;
+      }
+      return d + ' ' + mons[m-1] + ' ' + y + ', ' + t12fmt(start.hour, start.minute) + '–' + t12fmt(end.hour, end.minute);
+    }
+
+    function generateUUID() { 
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { 
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3) | 0x8; 
+        return v.toString(16).toUpperCase(); 
+      }); 
+    }
+
+    function validateForm() {
+      hideMessages();
+
+      const firstTime = document.querySelector('input[name="firstTime"]:checked');
+      if (!firstTime) {
+        showError('Please select whether this is your first visit');
+        return false;
+      }
+
+      const over18 = document.querySelector('input[name="over18"]:checked');
+      if (!over18) {
+        showError('Please specify if the client is over 18');
+        return false;
+      }
+
+      const clientName = document.getElementById('clientName').value.trim();
+      const clientPhone = document.getElementById('clientPhone').value.trim();
+      
+      if (!clientName) {
+        showError('Please enter the client name');
+        return false;
+      }
+      
+      if (!clientPhone) {
+        showError('Please enter the client phone number');
+        return false;
+      }
+
+      if (over18.value === 'no') {
+        const guardianName = document.getElementById('guardianName').value.trim();
+        const guardianPhone = document.getElementById('guardianPhone').value.trim();
+        
+        if (!guardianName || !guardianPhone) {
+          showError('Guardian information is required for clients under 18');
+          return false;
+        }
+      }
+
+      if (!selectedSlot) {
+        showError('Please select an appointment time');
+        return false;
+      }
+
+      return true;
+    }
+
+    function showConfirmation(whenText) {
+      const card = document.getElementById('confirmationCard');
+      document.getElementById('confWhen').textContent = whenText;
+      document.getElementById('confAddress').textContent = CONFIG.CLINIC_ADDRESS;
+      
+      // Update phone number in cancel/reschedule notice if configured
+      if (CONFIG.CLINIC_PHONE) {
+        const notice = card.querySelector('.confirm-notice');
+        if (notice) {
+          notice.innerHTML = `
+            <strong>Reminders:</strong> You'll receive confirmation and reminder messages via email/SMS 48 and 24 hours before your appointment.
+            <br><br>
+            <strong>Need to change your appointment?</strong> Please call our office at ${CONFIG.CLINIC_PHONE} or reply to your confirmation message as soon as possible if you need to cancel or reschedule.
+          `;
+        }
+      }
+      
+      card.classList.add('visible');
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    async function handleSubmit(e) {
+      e.preventDefault();
+      if (!validateForm()) return;
+
+      const btn = document.getElementById('submitBtn');
+      const overlay = document.getElementById('loadingOverlay');
+      const overlayMsg = document.getElementById('overlayMessage');
+
+      btn.disabled = true;
+      overlayMsg.textContent = 'Confirming your appointment...';
+      overlay.classList.add('active');
+
+      try {
+        const form = new FormData(e.target);
+        const clientName = form.get('clientName').trim();
+        const clientPhone = form.get('clientPhone').trim();
+        const firstTime = form.get('firstTime');
+        const over18 = form.get('over18');
+        const guardianName = form.get('guardianName')?.trim() || '';
+        const guardianPhone = form.get('guardianPhone')?.trim() || '';
+
+        const st = { hour: selectedSlot.start.hour, minute: selectedSlot.start.minute };
+        const endHM = addMinutesToHM(st.hour, st.minute, appointmentDuration);
+
+        const startDT = ymdhms(selectedSlot.y, selectedSlot.m, selectedSlot.d, st.hour, st.minute);
+        const endDT = ymdhms(selectedSlot.y, selectedSlot.m, selectedSlot.d, endHM.hour, endHM.minute);
+
+        const visitType = firstTime === 'yes' ? 'First Visit (1hr)' : 'Follow-up (30min)';
+        
+        let body = `Physician appointment - ${visitType}\n`;
+        body += `Client: ${clientName}\n`;
+        body += `Phone: ${clientPhone}\n`;
+        body += `Date/Time: ${humanTimeDisplayYMD(selectedSlot.y, selectedSlot.m, selectedSlot.d, st, endHM)}\n`;
+        body += `Location: In-office visit\n`;
+        body += `Over 18: ${over18 === 'yes' ? 'Yes' : 'No'}\n`;
+        
+        if (over18 === 'no') {
+          body += `Guardian: ${guardianName} (${guardianPhone})\n`;
+        }
+        
+        body += `\nPlease check in at the front desk upon arrival.`;
+
+        const payload = {
+          subject: `Physician Appointment - ${clientName}`,
+          body: body,
+          start: { dateTime: startDT, timeZone: CONFIG.TIMEZONE },
+          end: { dateTime: endDT, timeZone: CONFIG.TIMEZONE },
+          location: { displayName: 'In-office' },
+          attendees: [{ name: clientName, type: 'required' }],
+          transactionId: generateUUID()
+        };
+
+        console.log('[BOOK payload]', payload);
+
+        const url = withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY);
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+          let t = '';
+          try { t = await resp.text(); } catch(_) {}
+          throw new Error('Failed to book (' + resp.status + ') ' + t);
+        }
+
+        showSuccess();
+        const whenText = humanTimeDisplayYMD(selectedSlot.y, selectedSlot.m, selectedSlot.d, st, endHM);
+        showConfirmation(whenText);
+
+        // Reset form after successful booking
+        setTimeout(() => {
+          clearForm();
+        }, 3000);
+
+      } catch(err) {
+        console.error(err);
+        showError('There was an error booking your appointment. Please try again or call the office.');
+      } finally {
+        btn.disabled = false;
+        overlay.classList.remove('active');
+      }
+    }
+
+    function clearForm() {
+      document.getElementById('physicianForm').reset();
+      document.getElementById('guardianInfo').classList.add('hidden');
+      document.getElementById('timeSlots').innerHTML = '';
+      selectedSlot = null;
+      availableSlots = [];
+      appointmentDuration = 30;
+      hideMessages();
+      document.getElementById('confirmationCard').classList.remove('visible');
+      document.querySelectorAll('.slot-chip').forEach(chip => chip.classList.remove('selected'));
+      document.querySelectorAll('.radio-option').forEach(card => card.classList.remove('selected'));
+    }
+
+    function showSuccess() { 
+      hideMessages(); 
+      const el = document.getElementById('successMessage'); 
+      el.style.display = 'block'; 
+      setTimeout(() => { el.style.display = 'none'; }, 5000); 
+    }
+    
+    function showError(msg) { 
+      hideMessages(); 
+      const el = document.getElementById('errorMessage'); 
+      el.textContent = msg; 
+      el.style.display = 'block'; 
+      setTimeout(() => { el.style.display = 'none'; }, 6000); 
+    }
+    
+    function hideMessages() { 
+      document.getElementById('successMessage').style.display = 'none'; 
+      document.getElementById('errorMessage').style.display = 'none'; 
+    }
+  </script>
+</body>
+</html>
