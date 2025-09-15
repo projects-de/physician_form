@@ -318,83 +318,94 @@
 </head>
 <body>
   <div class="container">
+    <!-- Header -->
     <div class="header">
-      <h1>Still Waters Professional Counseling</h1>
-      <p>Schedule Your Physician Appointment</p>
+      <h1>Still Waters – Physician Scheduler</h1>
+      <p>In-office NP/MD visits • no telehealth • 15-minute start times</p>
     </div>
 
-    <form id="physicianForm" class="form-container" novalidate>
-      <div id="successMessage" class="success-message">Appointment confirmed! You'll receive a confirmation shortly.</div>
-      <div id="errorMessage" class="error-message">There was an error booking your appointment. Please try again.</div>
-      
+    <!-- Form -->
+    <form id="physForm" class="form-container" novalidate>
+      <!-- Toasts -->
+      <div id="successMessage" class="success-message">Appointment booked! You’ll receive a confirmation shortly.</div>
+      <div id="errorMessage" class="error-message">Something went wrong. Please try again.</div>
+
+      <!-- Post-booking confirmation card -->
       <div id="confirmationCard" class="confirm-card" aria-live="polite">
-        <h3>Appointment Confirmed! ✓</h3>
-        <div class="confirm-row"><b>Date & Time:</b><span id="confWhen">—</span></div>
-        <div class="confirm-row"><b>Location:</b><span>In-office visit</span></div>
-        <div class="confirm-row"><b>Address:</b><span id="confAddress">—</span></div>
-        <div class="confirm-row"><b>Instructions:</b><span>Please check in at the front desk when you arrive</span></div>
-        <div class="confirm-notice">
-          <strong>Reminders:</strong> You'll receive confirmation and reminder messages via email/SMS 48 and 24 hours before your appointment.
-          <br><br>
-          <strong>Need to change your appointment?</strong> Please call our office or reply to your confirmation message as soon as possible if you need to cancel or reschedule.
+        <h3>You're booked! 🎉</h3>
+        <div class="confirm-row"><b>Date & time</b><span id="confWhen">—</span></div>
+        <div class="confirm-row"><b>Clinic location</b><span id="confLocation">—</span></div>
+        <div class="confirm-row"><b>Note</b><span id="confNote">Please check in at the front desk when you arrive.</span></div>
+        <div class="confirm-actions">
+          <a id="confOutlookLink" class="btn btn-secondary" href="#" target="_blank" rel="noopener" style="display:none">Open in Outlook</a>
         </div>
       </div>
 
-      <div class="info-notice">
-        <strong>Note:</strong> This appointment is for an in-office physician visit. No telehealth option is available. Your appointment duration will be determined based on whether this is your first visit or a follow-up.
-      </div>
-
-      <div class="form-section">
-        <h2>Visit Type</h2>
-        <div class="form-group">
-          <label>Is this your first time seeing a physician at Still Waters Professional Counseling? <span class="required">*</span></label>
-          <div class="radio-group">
-            <div class="radio-option" data-firsttime="yes">
-              <input type="radio" id="firstTimeYes" name="firstTime" value="yes" required />
-              <label for="firstTimeYes">Yes (First Visit - 1 hour)</label>
-            </div>
-            <div class="radio-option" data-firsttime="no">
-              <input type="radio" id="firstTimeNo" name="firstTime" value="no" required />
-              <label for="firstTimeNo">No (Follow-up - 30 minutes)</label>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <!-- Person Receiving Services -->
       <div class="form-section">
         <h2>Person Receiving Services</h2>
-        <div class="form-group">
-          <label>Is the person receiving services over 18? <span class="required">*</span></label>
-          <div class="radio-group">
-            <div class="radio-option" data-over18="yes">
-              <input type="radio" id="over18Yes" name="over18" value="yes" required />
-              <label for="over18Yes">Yes</label>
-            </div>
-            <div class="radio-option" data-over18="no">
-              <input type="radio" id="over18No" name="over18" value="no" required />
-              <label for="over18No">No</label>
-            </div>
-          </div>
-        </div>
-
         <div class="form-row">
           <div class="form-group">
-            <label for="clientName">Client Name <span class="required">*</span></label>
-            <input type="text" id="clientName" name="clientName" required placeholder="Full Name" />
+            <label for="firstName">First Name <span class="required">*</span></label>
+            <input type="text" id="firstName" name="firstName" autocomplete="given-name" required />
           </div>
           <div class="form-group">
-            <label for="clientPhone">Client Phone <span class="required">*</span></label>
-            <input type="tel" id="clientPhone" name="clientPhone" required placeholder="123-456-7890" />
+            <label for="lastName">Last Name <span class="required">*</span></label>
+            <input type="text" id="lastName" name="lastName" autocomplete="family-name" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email <span class="required">*</span></label>
+            <input type="email" id="email" name="email" autocomplete="email" required />
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone <span class="required">*</span></label>
+            <input type="tel" id="phone" name="phone" placeholder="123-456-7890" autocomplete="tel" required />
           </div>
         </div>
       </div>
 
+      <!-- First-Time vs Follow-Up -->
+      <div class="form-section">
+        <h2>Visit Type</h2>
+        <label>Is this your first time seeing a physician at Still Waters Professional Counseling? <span class="required">*</span></label>
+        <div class="radio-group" style="margin-top:10px">
+          <label class="radio-option">
+            <input type="radio" id="firstYes" name="firstTime" value="yes" />
+            <span>Yes, first-time (60 minutes)</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" id="firstNo" name="firstTime" value="no" />
+            <span>No, follow-up (30 minutes)</span>
+          </label>
+        </div>
+        <p class="hint">Starts are offered every 15 minutes. First visits allow 60m (chosen in 30m steps for double-booking); follow-ups allow 30m (15m steps).</p>
+      </div>
+
+      <!-- Over 18 -->
+      <div class="form-section">
+        <h2>Age Verification</h2>
+        <label>Is the person receiving services over 18? <span class="required">*</span></label>
+        <div class="radio-group" style="margin-top:10px">
+          <label class="radio-option">
+            <input type="radio" id="over18Yes" name="over18" value="yes" />
+            <span>Yes</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" id="over18No" name="over18" value="no" />
+            <span>No</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Guardian (shown only if under 18) -->
       <div id="guardianInfo" class="form-section hidden">
         <h2>Guardian Information</h2>
         <div class="form-row">
           <div class="form-group">
             <label for="guardianName">Guardian Name <span class="required">*</span></label>
-            <input type="text" id="guardianName" name="guardianName" placeholder="Full Name" />
+            <input type="text" id="guardianName" name="guardianName" />
           </div>
           <div class="form-group">
             <label for="guardianPhone">Guardian Phone <span class="required">*</span></label>
@@ -403,562 +414,584 @@
         </div>
       </div>
 
+      <!-- Select Appointment Time -->
       <div class="form-section">
         <h2>Select Appointment Time</h2>
         <div class="form-group">
           <button type="button" class="btn btn-secondary" id="loadSlotsBtn">Load Available Times</button>
         </div>
-        <div id="timeSlots" class="time-slots"></div>
+        <div id="timeSlots" class="time-slots" aria-live="polite"></div>
+        <p class="hint">Only start times are shown. End times are calculated automatically.</p>
       </div>
 
+      <!-- Book -->
       <div class="button-group">
         <button type="button" class="btn btn-secondary" id="clearFormBtn">Clear Form</button>
-        <button type="submit" class="btn btn-primary" id="submitBtn">Confirm Appointment</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          Confirm Appointment
+          <span class="loading-spinner hidden" id="submitSpinner"></span>
+        </button>
       </div>
     </form>
   </div>
 
-  <div id="loadingOverlay" class="loading-overlay">
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
     <div class="loading-content">
-      <div class="spinner"></div>
+      <div class="spinner" aria-hidden="true"></div>
       <p id="overlayMessage">Processing your request...</p>
     </div>
   </div>
 
   <script>
-    // ===== CONFIG =====
-    const CONFIG = {
-      GET_SLOTS_URL: 'https://sw-function-b6c4h9cnexhbh4g3.canadacentral-01.azurewebsites.net/api/Calender',
-      BOOK_APPOINTMENT_URL: 'https://sw-function-b6c4h9cnexhbh4g3.canadacentral-01.azurewebsites.net/api/CreateEvent',
-      GET_SLOTS_KEY: '',
-      BOOK_APPOINTMENT_KEY: '',
-      TIMEZONE: 'Central Standard Time',
-      SLOT_MINUTES: 15,
-      CLINIC_ADDRESS: 'Still Waters Professional Counseling, 123 Main St, Suite 100, City, State 12345', // Update with actual address
-      CLINIC_PHONE: '(555) 123-4567' // Update with actual phone number
-    };
+/* =========================
+   Still Waters – Physician Scheduler JS
+   v2025-09-15_physician_v1
+   ========================= */
 
-    // Global variables
-    let selectedSlot = null;
-    let availableSlots = [];
-    let appointmentDuration = 30; // default to follow-up
+var CONFIG = {
+  GET_SLOTS_URL: 'https://sw-function-b6c4h9cnexhbh4g3.canadacentral-01.azurewebsites.net/api/Calender',
+  BOOK_APPOINTMENT_URL: 'https://sw-function-b6c4h9cnexhbh4g3.canadacentral-01.azurewebsites.net/api/CreateEvent',
+  GET_SLOTS_KEY: '',
+  BOOK_APPOINTMENT_KEY: '',
+  TIMEZONE: 'Central Standard Time',
+  CLINIC_NAME: 'Still Waters Professional Counseling – Clinic',
+  // Fallback; can be overridden by ?address=... in the URL or injected by your app
+  CLINIC_ADDRESS: 'Your clinic full address here'
+};
 
-    function withKey(url, key) {
-      if (!key) return url;
-      try { 
-        const u = new URL(url); 
-        u.searchParams.set('code', key); 
-        return u.toString(); 
-      }
-      catch(e) { 
-        const sep = url.indexOf('?')>=0 ? '&' : '?'; 
-        return url + sep + 'code=' + encodeURIComponent(key); 
-      }
-    }
+/* -------------------------
+   State
+-------------------------- */
+var availableSlots = [];     // parsed windows array
+var selectedSlot = null;     // {y,m,d,start{hour,minute}, durationMin, stepMin}
+var visitType = null;        // 'first' | 'followup'
+var durationMin = 30;        // computed from visitType
+var stepMin = 15;            // computed from visitType
 
-    // Pre-fill form from URL parameters
-    function prefillFromURL() {
-      const params = new URLSearchParams(window.location.search);
-      
-      if (params.has('name')) {
-        document.getElementById('clientName').value = params.get('name');
-      }
-      if (params.has('phone')) {
-        document.getElementById('clientPhone').value = params.get('phone');
-      }
-      if (params.has('guardianName')) {
-        document.getElementById('guardianName').value = params.get('guardianName');
-      }
-      if (params.has('guardianPhone')) {
-        document.getElementById('guardianPhone').value = params.get('guardianPhone');
-      }
-      if (params.has('over18')) {
-        const isOver18 = params.get('over18').toLowerCase() === 'yes';
-        const radio = document.getElementById(isOver18 ? 'over18Yes' : 'over18No');
-        if (radio) {
-          radio.checked = true;
-          // Trigger the UI update
-          const card = document.querySelector(`.radio-option[data-over18="${isOver18 ? 'yes' : 'no'}"]`);
-          if (card) card.click();
-        }
-      }
-      if (params.has('firstTime')) {
-        const isFirstTime = params.get('firstTime').toLowerCase() === 'yes';
-        const radio = document.getElementById(isFirstTime ? 'firstTimeYes' : 'firstTimeNo');
-        if (radio) {
-          radio.checked = true;
-          // Trigger the UI update
-          const card = document.querySelector(`.radio-option[data-firsttime="${isFirstTime ? 'yes' : 'no'}"]`);
-          if (card) card.click();
-        }
-      }
-    }
+/* -------------------------
+   Utilities
+-------------------------- */
+function withKey(url, key) {
+  if (!key) return url;
+  try {
+    var u = new URL(url);
+    u.searchParams.set('code', key);
+    return u.toString();
+  } catch {
+    var sep = url.indexOf('?') >= 0 ? '&' : '?';
+    return url + sep + 'code=' + encodeURIComponent(key);
+  }
+}
+function p2(n){ return (n<10?'0':'')+n; }
+function generateUUID(){ 
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){ 
+    var r=Math.random()*16|0, v=c==='x'?r:(r&0x3)|0x8; 
+    return v.toString(16).toUpperCase(); 
+  }); 
+}
+function convertTo24Hour(timeStr){
+  var t=timeStr.trim().split(' ');
+  var hm=t[0].split(':'), h=parseInt(hm[0],10), m=parseInt(hm[1],10), p=t[1];
+  if(p==='PM'&&h!==12)h+=12;
+  if(p==='AM'&&h===12)h=0;
+  return {hours:h, minutes:m};
+}
+function hmToMinutes(h,m){ return h*60+m; }
+function minutesToHM(total){ return {hour: Math.floor(total/60), minute: total%60}; }
+function addMinutesToHM(h, m, delta){
+  var total = h*60 + m + delta;
+  return { hour: Math.floor(total/60), minute: total%60 };
+}
+function t12fmt(h, m){
+  var ap=h>=12?'PM':'AM';
+  var hh=h%12===0?12:(h%12);
+  return hh + ':' + p2(m) + ' ' + ap;
+}
+function ymdhms(y,m,d,h,mi){ return y+'-'+p2(m)+'-'+p2(d)+'T'+p2(h)+':'+p2(mi)+':00'; }
+function localDow(y,m,d){
+  var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  return days[new Date(y, m-1, d).getDay()];
+}
+function getQueryParam(name){
+  var m = new RegExp('[?&]'+name+'=([^&#]*)').exec(window.location.search);
+  return m ? decodeURIComponent(m[1].replace(/\+/g,'%20')) : null;
+}
+function referralAddressText(){
+  return getQueryParam('address') || CONFIG.CLINIC_ADDRESS || '';
+}
 
-    // Initialize event listeners
-    document.addEventListener('DOMContentLoaded', function() {
-      // Pre-fill form if URL parameters exist
-      prefillFromURL();
-      
-      // First time visit selection
-      document.querySelectorAll('.radio-option[data-firsttime]').forEach(function(card) {
-        card.addEventListener('click', function() {
-          const val = this.getAttribute('data-firsttime');
-          const radio = document.getElementById(val === 'yes' ? 'firstTimeYes' : 'firstTimeNo');
-          if (radio) radio.checked = true;
+/* -------------------------
+   Parsing free_slots windows
+   Example: "15 Sep 2025, 03:40 PM - 05:00 PM"
+-------------------------- */
+function parseSlotString(slotStr){
+  var parts = slotStr.split(', ');
+  if (parts.length < 2) throw new Error('Unexpected slot format: '+slotStr);
 
-          document.querySelectorAll('.radio-option[data-firsttime]').forEach(c => c.classList.remove('selected'));
-          this.classList.add('selected');
+  var datePart = parts[0]; // "15 Sep 2025"
+  var timePart = parts[1]; // "03:40 PM - 05:00 PM"
 
-          // Set appointment duration based on visit type
-          appointmentDuration = (val === 'yes') ? 60 : 30;
-          
-          // Clear any existing slots when visit type changes
-          document.getElementById('timeSlots').innerHTML = '';
-          selectedSlot = null;
+  var [dayStr, monStr, yearStr] = datePart.split(' ');
+  var day = parseInt(dayStr, 10), year = parseInt(yearStr, 10);
+  var monthMap = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+  var monthNum = monthMap[monStr];
+  if (!monthNum) throw new Error('Unknown month in slot: ' + slotStr);
+
+  var [startStr, endStr] = timePart.split(' - ');
+  var start24 = convertTo24Hour(startStr);
+  var end24   = convertTo24Hour(endStr);
+
+  return {
+    y: year, m: monthNum, d: day,
+    dateStr: datePart,
+    startMin: hmToMinutes(start24.hours, start24.minutes),
+    endMin:   hmToMinutes(end24.hours,   end24.minutes)
+  };
+}
+
+function groupByDate(slots){
+  var map = {};
+  slots.forEach(s => {
+    var key = s.y + '-' + p2(s.m) + '-' + p2(s.d);
+    if (!map[key]) map[key] = { y:s.y, m:s.m, d:s.d, dateStr:s.dateStr, windows:[] };
+    map[key].windows.push({ startMin: s.startMin, endMin: s.endMin });
+  });
+  return map;
+}
+
+/* -------------------------
+   Visit Type (First-Time vs Follow-Up)
+   - first-time: duration 60m, step 30m (double booking)
+   - follow-up:  duration 30m, step 15m
+-------------------------- */
+function applyVisitTypeFromUI(){
+  var sel = document.querySelector('input[name="firstTime"]:checked');
+  if (!sel) { visitType = null; return; }
+  visitType = (sel.value === 'yes') ? 'first' : 'followup';
+  if (visitType === 'first'){ durationMin = 60; stepMin = 30; }
+  else { durationMin = 30; stepMin = 15; }
+}
+
+/* -------------------------
+   UI helpers (to match your existing form patterns)
+-------------------------- */
+function showSuccess(){ 
+  hideMessages(); 
+  var el=document.getElementById('successMessage'); 
+  if (el){ el.style.display='block'; setTimeout(function(){ el.style.display='none'; }, 5000); }
+}
+function showError(msg){
+  hideMessages();
+  var el=document.getElementById('errorMessage');
+  if (el){ el.textContent = msg; el.style.display='block'; setTimeout(function(){ el.style.display='none'; }, 6000); }
+}
+function hideMessages(){
+  var s=document.getElementById('successMessage'), e=document.getElementById('errorMessage');
+  if (s) s.style.display='none';
+  if (e) e.style.display='none';
+}
+function overlay(on, text){
+  var ov=document.getElementById('loadingOverlay');
+  var msg=document.getElementById('overlayMessage');
+  if (!ov) return;
+  if (typeof text==='string' && msg) msg.textContent = text;
+  ov.classList.toggle('active', !!on);
+}
+
+/* -------------------------
+   Slots rendering (start-time chips only; no end times shown)
+-------------------------- */
+function displaySlots(slots){
+  var container = document.getElementById('timeSlots');
+  if (!container) return;
+  container.innerHTML = '';
+  selectedSlot = null;
+
+  if (!visitType){
+    container.innerHTML = '<p>Please choose if this is your first visit or a follow-up.</p>';
+    return;
+  }
+  if (!slots || !slots.length){
+    container.innerHTML = '<p>No available slots returned by the server. Please check back later.</p>';
+    return;
+  }
+
+  // Normalize to parsed objects
+  if (typeof slots[0] === 'string' || !('startMin' in slots[0])) {
+    try { slots = slots.map(parseSlotString); }
+    catch(e){ console.error(e); container.innerHTML = '<p>Could not parse slots from server.</p>'; return; }
+  }
+
+  var byDate = groupByDate(slots);
+  var keys = Object.keys(byDate).sort();
+  if (!keys.length){
+    container.innerHTML = '<p>No availability found.</p>';
+    return;
+  }
+
+  keys.forEach(function(key){
+    var dayData = byDate[key];
+
+    var card = document.createElement('div');
+    card.className = 'time-slot';
+
+    var header = document.createElement('div');
+    header.className = 'date';
+    header.textContent = localDow(dayData.y, dayData.m, dayData.d) + ' ' + dayData.dateStr;
+
+    var grid = document.createElement('div');
+    grid.className = 'slot-grid';
+
+    var emitted = new Set();
+
+    dayData.windows.forEach(function(w){
+      // only emit starts that allow the full duration to fit
+      for (var m = w.startMin; m + durationMin <= w.endMin; m += stepMin){
+        if (emitted.has(m)) continue;
+        emitted.add(m);
+
+        var startHM = minutesToHM(m);
+
+        var chip = document.createElement('div');
+        chip.className = 'slot-chip';
+        chip.setAttribute('role','button');
+        chip.setAttribute('tabindex','0');
+        chip.textContent = t12fmt(startHM.hour, startHM.minute); // START TIME ONLY
+
+        chip.addEventListener('click', function(mm){
+          return function(){
+            document.querySelectorAll('.slot-chip').forEach(function(el){ el.classList.remove('selected'); });
+            chip.classList.add('selected');
+
+            selectedSlot = {
+              y: dayData.y, m: dayData.m, d: dayData.d,
+              start: minutesToHM(mm),
+              durationMin: durationMin,
+              stepMin: stepMin
+            };
+          };
+        }(m));
+
+        chip.addEventListener('keydown', function(ev){
+          if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); chip.click(); }
         });
-      });
 
-      // Over 18 selection
-      document.querySelectorAll('.radio-option[data-over18]').forEach(function(card) {
-        card.addEventListener('click', function() {
-          const val = this.getAttribute('data-over18');
-          const radio = document.getElementById(val === 'yes' ? 'over18Yes' : 'over18No');
-          if (radio) radio.checked = true;
-
-          document.querySelectorAll('.radio-option[data-over18]').forEach(c => c.classList.remove('selected'));
-          this.classList.add('selected');
-
-          const guardianSection = document.getElementById('guardianInfo');
-          if (val === 'no') {
-            guardianSection.classList.remove('hidden');
-            document.getElementById('guardianName').required = true;
-            document.getElementById('guardianPhone').required = true;
-          } else {
-            guardianSection.classList.add('hidden');
-            document.getElementById('guardianName').required = false;
-            document.getElementById('guardianPhone').required = false;
-          }
-        });
-      });
-
-      // Phone formatting
-      document.getElementById('clientPhone').addEventListener('input', formatPhone);
-      document.getElementById('guardianPhone').addEventListener('input', formatPhone);
-
-      // Button listeners
-      document.getElementById('loadSlotsBtn').addEventListener('click', loadAvailableSlots);
-      document.getElementById('clearFormBtn').addEventListener('click', clearForm);
-      document.getElementById('physicianForm').addEventListener('submit', handleSubmit);
+        grid.appendChild(chip);
+      }
     });
 
-    function formatPhone(e) {
-      let v = e.target.value.replace(/\D/g,'').slice(0,10);
-      if (v.length>6) e.target.value = v.slice(0,3)+'-'+v.slice(3,6)+'-'+v.slice(6);
-      else if (v.length>3) e.target.value = v.slice(0,3)+'-'+v.slice(3);
-      else e.target.value = v;
+    if (grid.children.length === 0){
+      var emptyMsg = document.createElement('div');
+      emptyMsg.style.color = 'var(--muted)';
+      emptyMsg.textContent = visitType==='first'
+        ? 'No 60-minute starts (30-min steps) fit today.'
+        : 'No 30-minute starts (15-min steps) fit today.';
+      grid.appendChild(emptyMsg);
     }
 
-    function parseSlotString(slotStr) {
-      const parts = slotStr.split(', ');
-      if (parts.length < 2) throw new Error('Unexpected slot format: ' + slotStr);
+    card.appendChild(header);
+    card.appendChild(grid);
+    container.appendChild(card);
+  });
+}
 
-      const datePart = parts[0];
-      const timePart = parts[1];
+/* -------------------------
+   Fetch free slots
+-------------------------- */
+async function loadAvailableSlots(){
+  applyVisitTypeFromUI();
+  if (!visitType){
+    showError('Please select whether this is your first visit or a follow-up.');
+    return;
+  }
+  overlay(true, 'Loading available times…');
+  var url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
+  try{
+    var resp = await fetch(url, { method:'GET', headers:{'Accept':'application/json'} });
+    var text = await resp.text();
+    if (!resp.ok) throw new Error('Failed to load slots ('+resp.status+')');
+    var data = text ? JSON.parse(text) : {};
+    var list = Array.isArray(data) ? data
+             : (Array.isArray(data.free_slots) ? data.free_slots
+             : (Array.isArray(data.freeSlots) ? data.freeSlots
+             : (Array.isArray(data.slots) ? data.slots : [])));
+    availableSlots = list.map(parseSlotString);
+    displaySlots(availableSlots);
+  }catch(e){
+    console.error(e);
+    showError('Failed to load available appointment times. Please try again.');
+  }finally{
+    overlay(false);
+  }
+}
 
-      const [dayStr, monStr, yearStr] = datePart.split(' ');
-      const day = parseInt(dayStr, 10);
-      const year = parseInt(yearStr, 10);
+/* -------------------------
+   Validation
+-------------------------- */
+function validateForm(){
+  hideMessages();
+  if (!selectedSlot){ showError('Please choose a start time.'); return false; }
 
-      const monthMap = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
-      const monthNum = monthMap[monStr];
-      if (!monthNum) throw new Error('Unknown month in slot: ' + slotStr);
+  var first = (document.getElementById('firstName')?.value||'').trim();
+  var last  = (document.getElementById('lastName')?.value||'').trim();
+  var email = (document.getElementById('email')?.value||'').trim();
+  var phone = (document.getElementById('phone')?.value||'').trim();
+  if (!first || !last){ showError('Please enter your first and last name.'); return false; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showError('Please enter a valid email.'); return false; }
+  if (phone.length < 7){ showError('Please enter a valid phone number.'); return false; }
 
-      const [startStr, endStr] = timePart.split(' - ');
-      const start24 = convertTo24Hour(startStr);
-      const end24 = convertTo24Hour(endStr);
+  var over = document.querySelector('input[name="over18"]:checked');
+  if (!over){ showError('Please confirm if the person is over 18.'); return false; }
 
-      const startMin = hmToMinutes(start24.hours, start24.minutes);
-      const endMin = hmToMinutes(end24.hours, end24.minutes);
+  if (over.value === 'no'){
+    var gn = (document.getElementById('guardianName')?.value||'').trim();
+    var gp = (document.getElementById('guardianPhone')?.value||'').trim();
+    if (!gn || gp.length < 7){ showError('Please provide guardian name and phone.'); return false; }
+  }
 
-      const mm = String(monthNum).padStart(2, '0');
-      const dd = String(day).padStart(2, '0');
+  var ft = document.querySelector('input[name="firstTime"]:checked');
+  if (!ft){ showError('Please select First-Time or Follow-Up.'); return false; }
 
-      return {
-        y: year, m: monthNum, d: day,
-        dateStr: datePart,
-        startTimeStr: startStr,
-        endTimeStr: endStr,
-        startMin, endMin,
-        dateKey: `${year}-${mm}-${dd}`
+  return true;
+}
+
+/* -------------------------
+   Confirmation (no provider names; in-office address + check-in)
+-------------------------- */
+function showConfirmation(opts){
+  // Expecting a card with: #confirmationCard, #confWhen, #confLocation, #confNote, #confOutlookLink (optional)
+  var card = document.getElementById('confirmationCard');
+  if (!card) return;
+
+  var confWhen = document.getElementById('confWhen');
+  var confLocation = document.getElementById('confLocation');
+  var confNote = document.getElementById('confNote');
+  var outlookLink = document.getElementById('confOutlookLink');
+
+  if (confWhen) confWhen.textContent = opts.whenText || '—';
+  if (confLocation) confLocation.textContent = opts.locationText || referralAddressText();
+  if (confNote) confNote.textContent = 'Please check in at the front desk when you arrive.';
+  if (outlookLink && opts.webLink) { outlookLink.href = opts.webLink; outlookLink.style.display='inline-flex'; }
+  else if (outlookLink) { outlookLink.removeAttribute('href'); outlookLink.style.display='none'; }
+
+  card.classList.add('visible');
+  card.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+function friendlyStartFromSelected(){
+  var y=selectedSlot.y, m=selectedSlot.m, d=selectedSlot.d;
+  var s=selectedSlot.start;
+  var mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d+' '+mons[m-1]+' '+y+', '+t12fmt(s.hour, s.minute);
+}
+
+/* -------------------------
+   Submit -> Create event (Outlook via your Azure Function)
+-------------------------- */
+async function handleSubmit(e){
+  e.preventDefault();
+  if (!validateForm()) return;
+
+  var btn=document.getElementById('submitBtn');
+  var spin=document.getElementById('submitSpinner');
+  if (btn) btn.disabled = true;
+  if (spin) spin.classList?.remove('hidden');
+  overlay(true, 'Submitting your booking…');
+
+  try{
+    var first=(document.getElementById('firstName')?.value||'').trim();
+    var last =(document.getElementById('lastName')?.value||'').trim();
+    var email=(document.getElementById('email')?.value||'').trim();
+    var phone=(document.getElementById('phone')?.value||'').trim();
+
+    // Stick a little convenience for prefill next time
+    try {
+      localStorage.setItem('sw_client_name', first+' '+last);
+      localStorage.setItem('sw_client_phone', phone);
+    } catch {}
+
+    var over = document.querySelector('input[name="over18"]:checked')?.value || 'yes';
+    var guardian = null;
+    if (over === 'no'){
+      guardian = {
+        name: (document.getElementById('guardianName')?.value||'').trim(),
+        phone:(document.getElementById('guardianPhone')?.value||'').trim()
       };
     }
 
-    function convertTo24Hour(timeStr) {
-      const t = timeStr.trim().split(' ');
-      const hm = t[0].split(':');
-      let h = parseInt(hm[0], 10);
-      const m = parseInt(hm[1], 10);
-      const p = t[1];
-      if (p === 'PM' && h !== 12) h += 12;
-      if (p === 'AM' && h === 12) h = 0;
-      return {hours: h, minutes: m};
+    applyVisitTypeFromUI(); // ensure durationMin/stepMin set
+
+    // Compute start/end in local clinic tz (server will store w/ timeZone)
+    var stH = selectedSlot.start.hour, stM = selectedSlot.start.minute;
+    var endHM = addMinutesToHM(stH, stM, durationMin);
+
+    var startDT = ymdhms(selectedSlot.y, selectedSlot.m, selectedSlot.d, stH, stM);
+    var endDT   = ymdhms(selectedSlot.y, selectedSlot.m, selectedSlot.d, endHM.hour, endHM.minute);
+
+    // Subject + body (no provider names shown)
+    var subject = 'Physician visit – ' + (visitType==='first' ? 'First-Time (60m)' : 'Follow-Up (30m)');
+    var addressText = referralAddressText();
+    var bodyParts = [
+      'In-office physician visit for ' + first + ' ' + last + '.',
+      'When: ' + friendlyStartFromSelected() + ' (' + CONFIG.TIMEZONE + ')',
+      'Where: ' + (addressText || CONFIG.CLINIC_NAME),
+      'Check-in: Please check in at the front desk when you arrive.',
+      'Contact: ' + phone,
+      '',
+      'Need to cancel or reschedule? Reply to this message or call the office.',
+      'You’ll receive reminders 48h and 24h before your appointment.'
+    ];
+    if (over === 'no' && guardian){
+      bodyParts.splice(3,0,'Guardian: ' + guardian.name + ' (' + guardian.phone + ')');
+    }
+    var body = bodyParts.join('\n');
+
+    var payload = {
+      subject: subject,
+      body: body,
+      start: { dateTime: startDT, timeZone: CONFIG.TIMEZONE },
+      end:   { dateTime: endDT,   timeZone: CONFIG.TIMEZONE },
+      expectedDate: selectedSlot.y + '-' + p2(selectedSlot.m) + '-' + p2(selectedSlot.d),
+      location: { displayName: 'In-Office — ' + (addressText || CONFIG.CLINIC_NAME) },
+      attendees: [{ address: email, name: first+' '+last, type:'required' }],
+      allowNewTimeProposals: true,
+      transactionId: generateUUID(),
+      visitType: visitType,           // 'first' | 'followup' (for your backend if you want it)
+      over18: over,
+      guardian: guardian
+    };
+
+    var url = withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY);
+    var resp = await fetch(url, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!resp.ok){
+      var t=''; try{ t=await resp.text(); }catch(_){}
+      throw new Error('Failed to book ('+resp.status+') '+t);
     }
 
-    function hmToMinutes(h, m) { return h * 60 + m; }
-    function minutesToHM(total) { return {hour: Math.floor(total/60), minute: total % 60}; }
+    var result = await resp.json();
 
-    function t12fmt(h, m) {
-      const p2 = n => (n < 10 ? '0' : '') + n;
-      const ap = h >= 12 ? 'PM' : 'AM';
-      const hh = h % 12 === 0 ? 12 : (h % 12);
-      return hh + ':' + p2(m) + ' ' + ap;
+    // UI success + confirmation card
+    showSuccess();
+    showConfirmation({
+      whenText: friendlyStartFromSelected(),
+      locationText: addressText,
+      webLink: result?.webLink || null
+    });
+
+  }catch(err){
+    console.error(err);
+    showError('There was an error booking your appointment. Please try again or call the office.');
+  }finally{
+    if (btn) btn.disabled=false;
+    if (spin) spin.classList?.add('hidden');
+    overlay(false);
+  }
+}
+
+/* -------------------------
+   Misc: Prefill + guardian toggle + phone mask
+-------------------------- */
+function formatPhoneInput(el){
+  if (!el) return;
+  el.addEventListener('input', function(e){
+    var v = e.target.value.replace(/\D/g,'').slice(0,10);
+    if (v.length>6) e.target.value = v.slice(0,3)+'-'+v.slice(3,6)+'-'+v.slice(6);
+    else if (v.length>3) e.target.value = v.slice(0,3)+'-'+v.slice(3);
+    else e.target.value = v;
+  });
+}
+
+function toggleGuardianSection(){
+  var over = document.querySelector('input[name="over18"]:checked');
+  var sec = document.getElementById('guardianInfo');
+  if (!sec) return;
+  if (over && over.value === 'no'){
+    sec.classList.remove('hidden');
+    var gn=document.getElementById('guardianName');
+    var gp=document.getElementById('guardianPhone');
+    if (gn) gn.required = true;
+    if (gp) gp.required = true;
+  } else {
+    sec.classList.add('hidden');
+    var gn=document.getElementById('guardianName');
+    var gp=document.getElementById('guardianPhone');
+    if (gn){ gn.required = false; gn.value=''; }
+    if (gp){ gp.required = false; gp.value=''; }
+  }
+}
+
+function prefillFromStorageOrQuery(){
+  try {
+    var nm = getQueryParam('name') || localStorage.getItem('sw_client_name');
+    var ph = getQueryParam('phone') || localStorage.getItem('sw_client_phone');
+    if (nm){
+      var parts = nm.trim().split(' ');
+      var first = parts.shift() || '';
+      var last  = parts.join(' ') || '';
+      if (document.getElementById('firstName')) document.getElementById('firstName').value = first;
+      if (document.getElementById('lastName'))  document.getElementById('lastName').value  = last;
     }
-
-    function groupByDate(slots) {
-      const map = {};
-      slots.forEach(s => {
-        const key = s.dateKey;
-        if (!map[key]) {
-          map[key] = { y: s.y, m: s.m, d: s.d, dateStr: s.dateStr, windows: [] };
-        }
-        map[key].windows.push({
-          startMin: s.startMin,
-          endMin: s.endMin,
-          startStr: s.startTimeStr,
-          endStr: s.endTimeStr
-        });
-      });
-      return map;
+    if (ph && document.getElementById('phone')){
+      document.getElementById('phone').value = ph;
     }
+  } catch {}
+}
 
-    function localDow(y, m, d) {
-      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      return days[new Date(y, m-1, d).getDay()];
-    }
+/* -------------------------
+   Wire-up
+-------------------------- */
+document.addEventListener('DOMContentLoaded', function () {
+  // Phone masks
+  formatPhoneInput(document.getElementById('phone'));
+  formatPhoneInput(document.getElementById('guardianPhone'));
 
-    async function loadAvailableSlots() {
-      // Check if visit type is selected
-      const visitType = document.querySelector('input[name="firstTime"]:checked');
-      if (!visitType) {
-        showError('Please select whether this is your first visit or a follow-up');
-        return;
-      }
+  // Over 18 radios
+  document.querySelectorAll('input[name="over18"]').forEach(function(r){
+    r.addEventListener('change', toggleGuardianSection);
+  });
 
-      const overlay = document.getElementById('loadingOverlay');
-      overlay.classList.add('active');
-      
-      const url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
-      
-      try {
-        const resp = await fetch(url, { method: 'GET', headers: {'Accept': 'application/json'} });
-        const text = await resp.text();
-        console.log('[GET /Calender]', resp.status, text);
-        
-        if (!resp.ok) throw new Error('Failed to load slots (' + resp.status + ')');
-        
-        const data = text ? JSON.parse(text) : {};
-        const list = Array.isArray(data) ? data
-                  : (Array.isArray(data.free_slots) ? data.free_slots
-                  : (Array.isArray(data.freeSlots) ? data.freeSlots
-                  : (Array.isArray(data.slots) ? data.slots : [])));
-        
-        availableSlots = list.map(parseSlotString);
-        displaySlots(availableSlots);
-      } catch(e) {
-        console.error(e);
-        showError('Failed to load available appointment times. Please try again.');
-      } finally {
-        overlay.classList.remove('active');
-      }
-    }
+  // First-time vs follow-up radios: update visitType and re-render chips if we already loaded windows
+  document.querySelectorAll('input[name="firstTime"]').forEach(function(r){
+    r.addEventListener('change', function(){
+      applyVisitTypeFromUI();
+      if (availableSlots.length){ displaySlots(availableSlots); }
+    });
+  });
 
-    function displaySlots(slots) {
-      const container = document.getElementById('timeSlots');
-      container.innerHTML = '';
-      selectedSlot = null;
+  // Load slots
+  document.getElementById('loadSlotsBtn')?.addEventListener('click', loadAvailableSlots);
 
-      if (!slots || !slots.length) {
-        container.innerHTML = '<p>No available appointments at this time. Please call the office.</p>';
-        return;
-      }
+  // Submit
+  document.getElementById('physForm')?.addEventListener('submit', handleSubmit);
 
-      const byDate = groupByDate(slots);
-      const keys = Object.keys(byDate).sort();
+  // Clear (optional button)
+  document.getElementById('clearFormBtn')?.addEventListener('click', function(){
+    document.getElementById('physForm')?.reset();
+    selectedSlot = null;
+    availableSlots = [];
+    visitType = null;
+    durationMin = 30;
+    stepMin = 15;
+    var ts = document.getElementById('timeSlots'); if (ts) ts.innerHTML='';
+    hideMessages();
+    var card = document.getElementById('confirmationCard'); if (card) card.classList.remove('visible');
+    toggleGuardianSection();
+  });
 
-      keys.forEach(key => {
-        const dayData = byDate[key];
+  // Prefill
+  prefillFromStorageOrQuery();
 
-        const card = document.createElement('div');
-        card.className = 'time-slot';
+  // Initialize guardian section hidden
+  toggleGuardianSection();
+});
+</script>
 
-        const header = document.createElement('div');
-        header.className = 'date';
-        header.textContent = localDow(dayData.y, dayData.m, dayData.d) + ', ' + dayData.dateStr;
-
-        const grid = document.createElement('div');
-        grid.className = 'slot-grid';
-
-        const emittedStarts = new Set();
-
-        dayData.windows.forEach(w => {
-          // Generate 15-minute slots within each window
-          for (let m = w.startMin; m + appointmentDuration <= w.endMin; m += CONFIG.SLOT_MINUTES) {
-            if (emittedStarts.has(m)) continue;
-            emittedStarts.add(m);
-
-            const startHM = minutesToHM(m);
-
-            const chipEl = document.createElement('div');
-            chipEl.className = 'slot-chip';
-            chipEl.setAttribute('role', 'button');
-            chipEl.setAttribute('tabindex', '0');
-            chipEl.textContent = t12fmt(startHM.hour, startHM.minute);
-
-            chipEl.addEventListener('click', () => {
-              document.querySelectorAll('.slot-chip').forEach(el => el.classList.remove('selected'));
-              chipEl.classList.add('selected');
-              selectedSlot = {
-                y: dayData.y, m: dayData.m, d: dayData.d,
-                dateStr: dayData.dateStr,
-                start: { hour: startHM.hour, minute: startHM.minute },
-                durationMinutes: appointmentDuration,
-                display: chipEl.textContent
-              };
-            });
-
-            chipEl.addEventListener('keydown', (ev) => {
-              if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); chipEl.click(); }
-            });
-
-            grid.appendChild(chipEl);
-          }
-        });
-
-        if (grid.children.length === 0) {
-          const emptyMsg = document.createElement('div');
-          emptyMsg.style.color = 'var(--muted)';
-          emptyMsg.textContent = 'No available appointments in this time window.';
-          grid.appendChild(emptyMsg);
-        }
-
-        card.appendChild(header);
-        card.appendChild(grid);
-        container.appendChild(card);
-      });
-    }
-
-    function addMinutesToHM(h, m, delta) {
-      const total = h * 60 + m + delta;
-      return { hour: Math.floor(total/60), minute: total % 60 };
-    }
-
-    function ymdhms(y, m, d, h, mi) { 
-      const p2 = n => (n < 10 ? '0' : '') + n;
-      return y + '-' + p2(m) + '-' + p2(d) + 'T' + p2(h) + ':' + p2(mi) + ':00'; 
-    }
-
-    function humanTimeDisplayYMD(y, m, d, start, end) {
-      const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const p2 = n => (n < 10 ? '0' : '') + n;
-      function t12fmt(h, mn) {
-        const ap = h >= 12 ? 'PM' : 'AM';
-        const hh = h % 12 === 0 ? 12 : h % 12;
-        return hh + ':' + p2(mn) + ' ' + ap;
-      }
-      return d + ' ' + mons[m-1] + ' ' + y + ', ' + t12fmt(start.hour, start.minute) + '–' + t12fmt(end.hour, end.minute);
-    }
-
-    function generateUUID() { 
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { 
-        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3) | 0x8; 
-        return v.toString(16).toUpperCase(); 
-      }); 
-    }
-
-    function validateForm() {
-      hideMessages();
-
-      const firstTime = document.querySelector('input[name="firstTime"]:checked');
-      if (!firstTime) {
-        showError('Please select whether this is your first visit');
-        return false;
-      }
-
-      const over18 = document.querySelector('input[name="over18"]:checked');
-      if (!over18) {
-        showError('Please specify if the client is over 18');
-        return false;
-      }
-
-      const clientName = document.getElementById('clientName').value.trim();
-      const clientPhone = document.getElementById('clientPhone').value.trim();
-      
-      if (!clientName) {
-        showError('Please enter the client name');
-        return false;
-      }
-      
-      if (!clientPhone) {
-        showError('Please enter the client phone number');
-        return false;
-      }
-
-      if (over18.value === 'no') {
-        const guardianName = document.getElementById('guardianName').value.trim();
-        const guardianPhone = document.getElementById('guardianPhone').value.trim();
-        
-        if (!guardianName || !guardianPhone) {
-          showError('Guardian information is required for clients under 18');
-          return false;
-        }
-      }
-
-      if (!selectedSlot) {
-        showError('Please select an appointment time');
-        return false;
-      }
-
-      return true;
-    }
-
-    function showConfirmation(whenText) {
-      const card = document.getElementById('confirmationCard');
-      document.getElementById('confWhen').textContent = whenText;
-      document.getElementById('confAddress').textContent = CONFIG.CLINIC_ADDRESS;
-      
-      // Update phone number in cancel/reschedule notice if configured
-      if (CONFIG.CLINIC_PHONE) {
-        const notice = card.querySelector('.confirm-notice');
-        if (notice) {
-          notice.innerHTML = `
-            <strong>Reminders:</strong> You'll receive confirmation and reminder messages via email/SMS 48 and 24 hours before your appointment.
-            <br><br>
-            <strong>Need to change your appointment?</strong> Please call our office at ${CONFIG.CLINIC_PHONE} or reply to your confirmation message as soon as possible if you need to cancel or reschedule.
-          `;
-        }
-      }
-      
-      card.classList.add('visible');
-      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    async function handleSubmit(e) {
-      e.preventDefault();
-      if (!validateForm()) return;
-
-      const btn = document.getElementById('submitBtn');
-      const overlay = document.getElementById('loadingOverlay');
-      const overlayMsg = document.getElementById('overlayMessage');
-
-      btn.disabled = true;
-      overlayMsg.textContent = 'Confirming your appointment...';
-      overlay.classList.add('active');
-
-      try {
-        const form = new FormData(e.target);
-        const clientName = form.get('clientName').trim();
-        const clientPhone = form.get('clientPhone').trim();
-        const firstTime = form.get('firstTime');
-        const over18 = form.get('over18');
-        const guardianName = form.get('guardianName')?.trim() || '';
-        const guardianPhone = form.get('guardianPhone')?.trim() || '';
-
-        const st = { hour: selectedSlot.start.hour, minute: selectedSlot.start.minute };
-        const endHM = addMinutesToHM(st.hour, st.minute, appointmentDuration);
-
-        const startDT = ymdhms(selectedSlot.y, selectedSlot.m, selectedSlot.d, st.hour, st.minute);
-        const endDT = ymdhms(selectedSlot.y, selectedSlot.m, selectedSlot.d, endHM.hour, endHM.minute);
-
-        const visitType = firstTime === 'yes' ? 'First Visit (1hr)' : 'Follow-up (30min)';
-        
-        let body = `Physician appointment - ${visitType}\n`;
-        body += `Client: ${clientName}\n`;
-        body += `Phone: ${clientPhone}\n`;
-        body += `Date/Time: ${humanTimeDisplayYMD(selectedSlot.y, selectedSlot.m, selectedSlot.d, st, endHM)}\n`;
-        body += `Location: In-office visit\n`;
-        body += `Over 18: ${over18 === 'yes' ? 'Yes' : 'No'}\n`;
-        
-        if (over18 === 'no') {
-          body += `Guardian: ${guardianName} (${guardianPhone})\n`;
-        }
-        
-        body += `\nPlease check in at the front desk upon arrival.`;
-
-        const payload = {
-          subject: `Physician Appointment - ${clientName}`,
-          body: body,
-          start: { dateTime: startDT, timeZone: CONFIG.TIMEZONE },
-          end: { dateTime: endDT, timeZone: CONFIG.TIMEZONE },
-          location: { displayName: 'In-office' },
-          attendees: [{ name: clientName, type: 'required' }],
-          transactionId: generateUUID()
-        };
-
-        console.log('[BOOK payload]', payload);
-
-        const url = withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY);
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-          body: JSON.stringify(payload)
-        });
-
-        if (!resp.ok) {
-          let t = '';
-          try { t = await resp.text(); } catch(_) {}
-          throw new Error('Failed to book (' + resp.status + ') ' + t);
-        }
-
-        showSuccess();
-        const whenText = humanTimeDisplayYMD(selectedSlot.y, selectedSlot.m, selectedSlot.d, st, endHM);
-        showConfirmation(whenText);
-
-        // Reset form after successful booking
-        setTimeout(() => {
-          clearForm();
-        }, 3000);
-
-      } catch(err) {
-        console.error(err);
-        showError('There was an error booking your appointment. Please try again or call the office.');
-      } finally {
-        btn.disabled = false;
-        overlay.classList.remove('active');
-      }
-    }
-
-    function clearForm() {
-      document.getElementById('physicianForm').reset();
-      document.getElementById('guardianInfo').classList.add('hidden');
-      document.getElementById('timeSlots').innerHTML = '';
-      selectedSlot = null;
-      availableSlots = [];
-      appointmentDuration = 30;
-      hideMessages();
-      document.getElementById('confirmationCard').classList.remove('visible');
-      document.querySelectorAll('.slot-chip').forEach(chip => chip.classList.remove('selected'));
-      document.querySelectorAll('.radio-option').forEach(card => card.classList.remove('selected'));
-    }
-
-    function showSuccess() { 
-      hideMessages(); 
-      const el = document.getElementById('successMessage'); 
-      el.style.display = 'block'; 
-      setTimeout(() => { el.style.display = 'none'; }, 5000); 
-    }
-    
-    function showError(msg) { 
-      hideMessages(); 
-      const el = document.getElementById('errorMessage'); 
-      el.textContent = msg; 
-      el.style.display = 'block'; 
-      setTimeout(() => { el.style.display = 'none'; }, 6000); 
-    }
-    
-    function hideMessages() { 
-      document.getElementById('successMessage').style.display = 'none'; 
-      document.getElementById('errorMessage').style.display = 'none'; 
-    }
-  </script>
 </body>
+
 </html>
