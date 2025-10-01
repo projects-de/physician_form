@@ -354,7 +354,7 @@ input[type="email"]{
     <!-- Header -->
     <div class="header">
       <h1>Still Waters – Physician Scheduler</h1>
-      <p>In-office NP/MD visits • telehealth available • 15-minute start times</p>
+      <p>In-office NP/MD visits • no telehealth • 15-minute start times</p>
     </div>
 
     <!-- Form -->
@@ -363,125 +363,111 @@ input[type="email"]{
       <div id="successMessage" class="success-message">Appointment booked! You’ll receive a confirmation shortly.</div>
       <div id="errorMessage" class="error-message">Something went wrong. Please try again.</div>
 
-      <!-- Parent/Guardian Confirmation -->
-      <div class="form-section">
-        <label>
-          <input type="checkbox" id="guardianConfirm" name="guardianConfirm" />
-          I am the parent or guardian of the individual(s) seeking an appointment and confirm that I am over the age of 18.
-        </label>
-      </div>
-
-      <!-- Parent/Guardian Info -->
-      <div class="form-section">
-        <h2>Parent/Guardian Information</h2>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="guardianFirst">First Name <span class="required">*</span></label>
-            <input type="text" id="guardianFirst" name="guardianFirst" required />
-          </div>
-          <div class="form-group">
-            <label for="guardianLast">Last Name <span class="required">*</span></label>
-            <input type="text" id="guardianLast" name="guardianLast" required />
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="guardianEmail">Email Address <span class="required">*</span></label>
-            <input type="email" id="guardianEmail" name="guardianEmail" required />
-          </div>
-          <div class="form-group">
-            <label for="guardianPhone">Phone Number <span class="required">*</span></label>
-            <input type="tel" id="guardianPhone" name="guardianPhone" placeholder="123-456-7890" required />
-          </div>
+      <!-- Post-booking confirmation card -->
+      <div id="confirmationCard" class="confirm-card" aria-live="polite">
+        <h3>You're booked! 🎉</h3>
+        <div class="confirm-row"><b>Date & time</b><span id="confWhen">—</span></div>
+        <div class="confirm-row"><b>Clinic location</b><span id="confLocation">—</span></div>
+        <div class="confirm-row"><b>Note</b><span id="confNote">Please check in at the front desk when you arrive.</span></div>
+        <div class="confirm-actions">
+          <a id="confOutlookLink" class="btn btn-secondary" href="#" target="_blank" rel="noopener" style="display:none">Open in Outlook</a>
         </div>
       </div>
 
-      <!-- Individuals Section -->
+      <!-- Person Receiving Services -->
       <div class="form-section">
-        <h2>Individual(s) Seeking Appointment</h2>
+        <h2>Person Receiving Services</h2>
         <div class="form-row">
           <div class="form-group">
-            <label for="patientFirst">First Name <span class="required">*</span></label>
-            <input type="text" id="patientFirst" name="patientFirst" required />
+            <label for="firstName">First Name <span class="required">*</span></label>
+            <input type="text" id="firstName" name="firstName" autocomplete="given-name" required />
           </div>
           <div class="form-group">
-            <label for="patientLast">Last Name <span class="required">*</span></label>
-            <input type="text" id="patientLast" name="patientLast" required />
+            <label for="lastName">Last Name <span class="required">*</span></label>
+            <input type="text" id="lastName" name="lastName" autocomplete="family-name" required />
           </div>
         </div>
-        <div class="form-group">
-          <label for="patientDOB">Birth Date <span class="required">*</span></label>
-          <input type="date" id="patientDOB" name="patientDOB" required />
-        </div>
-        <button type="button" class="btn btn-secondary">+ Add Additional Individual</button>
-      </div>
-
-      <!-- Location Selection -->
-      <div class="form-section">
-        <h2>Location</h2>
-        <div class="radio-group">
-          <label class="radio-option">
-            <input type="radio" name="location" value="augusta" />
-            <span>Augusta – 123 Main St.</span>
-          </label>
-          <label class="radio-option">
-            <input type="radio" name="location" value="macon" />
-            <span>Macon – 456 Oak Ave.</span>
-          </label>
-          <label class="radio-option">
-            <input type="radio" name="location" value="telehealth" />
-            <span>Telehealth (virtual)</span>
-          </label>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email <span class="required">*</span></label>
+            <input type="email" id="email" name="email" autocomplete="email" required />
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone <span class="required">*</span></label>
+            <input type="tel" id="phone" name="phone" placeholder="123-456-7890" autocomplete="tel" required />
+          </div>
         </div>
       </div>
 
       <!-- First-Time vs Follow-Up -->
       <div class="form-section">
         <h2>Visit Type</h2>
-        <div class="radio-group">
+        <label>Is this your first time seeing a physician at Still Waters Professional Counseling? <span class="required">*</span></label>
+        <div class="radio-group" style="margin-top:10px">
           <label class="radio-option">
-            <input type="radio" name="visitType" value="first" />
+            <input type="radio" id="firstYes" name="firstTime" value="yes" />
             <span>Yes, first-time (60 minutes)</span>
           </label>
           <label class="radio-option">
-            <input type="radio" name="visitType" value="followup" />
+            <input type="radio" id="firstNo" name="firstTime" value="no" />
             <span>No, follow-up (30 minutes)</span>
+          </label>
+        </div>
+        <p class="hint">Starts are offered every 15 minutes. First visits allow 60m (chosen in 30m steps for double-booking); follow-ups allow 30m (15m steps).</p>
+      </div>
+
+      <!-- Over 18 -->
+      <div class="form-section">
+        <h2>Age Verification</h2>
+        <label>Is the person receiving services over 18? <span class="required">*</span></label>
+        <div class="radio-group" style="margin-top:10px">
+          <label class="radio-option">
+            <input type="radio" id="over18Yes" name="over18" value="yes" />
+            <span>Yes</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" id="over18No" name="over18" value="no" />
+            <span>No</span>
           </label>
         </div>
       </div>
 
-      <!-- Appointment Time -->
-      <div class="form-section">
-        <h2>Appointment Time</h2>
-        <div class="form-group">
-          <label for="apptTime">Preferred Appointment Time <span class="required">*</span></label>
-          <input type="datetime-local" id="apptTime" name="apptTime" required />
+      <!-- Guardian (shown only if under 18) -->
+      <div id="guardianInfo" class="form-section hidden">
+        <h2>Guardian Information</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="guardianName">Guardian Name <span class="required">*</span></label>
+            <input type="text" id="guardianName" name="guardianName" />
+          </div>
+          <div class="form-group">
+            <label for="guardianPhone">Guardian Phone <span class="required">*</span></label>
+            <input type="tel" id="guardianPhone" name="guardianPhone" placeholder="123-456-7890" />
+          </div>
         </div>
+      </div>
+
+      <!-- Select Appointment Time -->
+      <div class="form-section">
+        <h2>Select Appointment Time</h2>
         <div class="form-group">
-          <label for="altAvailability">Alternate Availability</label>
-          <input type="text" id="altAvailability" name="altAvailability" placeholder="Enter other times you’re available" />
+          <button type="button" class="btn btn-secondary" id="loadSlotsBtn">Load Available Times</button>
         </div>
+        <div id="timeSlots" class="time-slots" aria-live="polite"></div>
+        <p class="hint">Only start times are shown. End times are calculated automatically.</p>
       </div>
 
-      <!-- Additional Notes -->
-      <div class="form-section">
-        <h2>Additional Notes (Optional)</h2>
-        <textarea id="notes" name="notes" rows="4" style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:12px;"></textarea>
-      </div>
-
-      <!-- Consent & Acknowledgements -->
-      <div class="form-section">
-        <label><input type="checkbox" name="consentReminders" /> I consent to receive appointment reminders.</label><br />
-        <label><input type="checkbox" name="confirmEmergency" required /> I confirm I am not experiencing a medical emergency.</label>
-      </div>
-
-      <!-- Buttons -->
+      <!-- Book -->
       <div class="button-group">
-        <button type="reset" class="btn btn-secondary">Clear Form</button>
-        <button type="submit" class="btn btn-primary">Confirm Appointment</button>
+        <button type="button" class="btn btn-secondary" id="clearFormBtn">Clear Form</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          Confirm Appointment
+          <span class="loading-spinner hidden" id="submitSpinner"></span>
+        </button>
       </div>
     </form>
   </div>
+
   <!-- Loading overlay -->
   <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
     <div class="loading-content">
@@ -490,11 +476,12 @@ input[type="email"]{
     </div>
   </div>
 
-  /* =========================
+  <script>
+/* =========================
    Still Waters – Physician Scheduler JS
    v2025-09-15_physician_v1
    ========================= */
-<script>
+
 var CONFIG = {
   GET_SLOTS_URL: 'https://sw-function-b6c4h9cnexhbh4g3.canadacentral-01.azurewebsites.net/api/Calender',
   BOOK_APPOINTMENT_URL: 'https://sw-function-b6c4h9cnexhbh4g3.canadacentral-01.azurewebsites.net/api/CreateEvent',
@@ -612,9 +599,9 @@ function groupByDate(slots){
    - follow-up:  duration 30m, step 15m
 -------------------------- */
 function applyVisitTypeFromUI(){
-  var sel = document.querySelector('input[name="visitType"]:checked');
+  var sel = document.querySelector('input[name="firstTime"]:checked');
   if (!sel) { visitType = null; return; }
-  visitType = sel.value; // 'first' or 'followup'
+  visitType = (sel.value === 'yes') ? 'first' : 'followup';
   if (visitType === 'first'){ durationMin = 60; stepMin = 30; }
   else { durationMin = 30; stepMin = 15; }
 }
@@ -777,78 +764,28 @@ async function loadAvailableSlots(){
 -------------------------- */
 function validateForm(){
   hideMessages();
-  
-  // Check if guardian confirmation is checked
-  var guardianConfirm = document.getElementById('guardianConfirm');
-  if (!guardianConfirm || !guardianConfirm.checked) {
-    showError('Please confirm you are the parent or guardian.');
-    return false;
+  if (!selectedSlot){ showError('Please choose a start time.'); return false; }
+
+  var first = (document.getElementById('firstName')?.value||'').trim();
+  var last  = (document.getElementById('lastName')?.value||'').trim();
+  var email = (document.getElementById('email')?.value||'').trim();
+  var phone = (document.getElementById('phone')?.value||'').trim();
+  if (!first || !last){ showError('Please enter your first and last name.'); return false; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showError('Please enter a valid email.'); return false; }
+  if (phone.length < 7){ showError('Please enter a valid phone number.'); return false; }
+
+  var over = document.querySelector('input[name="over18"]:checked');
+  if (!over){ showError('Please confirm if the person is over 18.'); return false; }
+
+  if (over.value === 'no'){
+    var gn = (document.getElementById('guardianName')?.value||'').trim();
+    var gp = (document.getElementById('guardianPhone')?.value||'').trim();
+    if (!gn || gp.length < 7){ showError('Please provide guardian name and phone.'); return false; }
   }
-  
-  // Check guardian information
-  var guardianFirst = (document.getElementById('guardianFirst')?.value||'').trim();
-  var guardianLast = (document.getElementById('guardianLast')?.value||'').trim();
-  var guardianEmail = (document.getElementById('guardianEmail')?.value||'').trim();
-  var guardianPhone = (document.getElementById('guardianPhone')?.value||'').trim();
-  
-  if (!guardianFirst || !guardianLast) {
-    showError('Please enter guardian first and last name.');
-    return false;
-  }
-  
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guardianEmail)) {
-    showError('Please enter a valid guardian email.');
-    return false;
-  }
-  
-  if (guardianPhone.length < 7) {
-    showError('Please enter a valid guardian phone number.');
-    return false;
-  }
-  
-  // Check patient information
-  var patientFirst = (document.getElementById('patientFirst')?.value||'').trim();
-  var patientLast = (document.getElementById('patientLast')?.value||'').trim();
-  var patientDOB = (document.getElementById('patientDOB')?.value||'').trim();
-  
-  if (!patientFirst || !patientLast) {
-    showError('Please enter patient first and last name.');
-    return false;
-  }
-  
-  if (!patientDOB) {
-    showError('Please enter patient date of birth.');
-    return false;
-  }
-  
-  // Check location selection
-  var location = document.querySelector('input[name="location"]:checked');
-  if (!location) {
-    showError('Please select a location.');
-    return false;
-  }
-  
-  // Check visit type
-  var visitType = document.querySelector('input[name="visitType"]:checked');
-  if (!visitType) {
-    showError('Please select a visit type.');
-    return false;
-  }
-  
-  // Check appointment time
-  var apptTime = (document.getElementById('apptTime')?.value||'').trim();
-  if (!apptTime) {
-    showError('Please select a preferred appointment time.');
-    return false;
-  }
-  
-  // Check emergency confirmation
-  var confirmEmergency = document.querySelector('input[name="confirmEmergency"]');
-  if (!confirmEmergency || !confirmEmergency.checked) {
-    showError('Please confirm you are not experiencing a medical emergency.');
-    return false;
-  }
-  
+
+  var ft = document.querySelector('input[name="firstTime"]:checked');
+  if (!ft){ showError('Please select First-Time or Follow-Up.'); return false; }
+
   return true;
 }
 
@@ -856,30 +793,10 @@ function validateForm(){
    Confirmation (no provider names; in-office address + check-in)
 -------------------------- */
 function showConfirmation(opts){
-  // Create confirmation card if it doesn't exist
+  // Expecting a card with: #confirmationCard, #confWhen, #confLocation, #confNote, #confOutlookLink (optional)
   var card = document.getElementById('confirmationCard');
-  if (!card) {
-    card = document.createElement('div');
-    card.id = 'confirmationCard';
-    card.className = 'confirm-card';
-    
-    var html = `
-      <h3>Appointment Confirmed</h3>
-      <div class="confirm-row"><b>When:</b> <span id="confWhen"></span></div>
-      <div class="confirm-row"><b>Where:</b> <span id="confLocation"></span></div>
-      <div class="confirm-row"><b>Note:</b> <span id="confNote"></span></div>
-      <div class="confirm-actions">
-        <a href="#" id="confOutlookLink" class="btn btn-primary" target="_blank" style="display:none">Add to Outlook</a>
-      </div>
-      <div class="confirm-notice">
-        You'll receive a confirmation email shortly. Please check in at the front desk when you arrive.
-      </div>
-    `;
-    
-    card.innerHTML = html;
-    document.querySelector('.form-container').insertBefore(card, document.querySelector('.button-group'));
-  }
-  
+  if (!card) return;
+
   var confWhen = document.getElementById('confWhen');
   var confLocation = document.getElementById('confLocation');
   var confNote = document.getElementById('confNote');
@@ -888,13 +805,8 @@ function showConfirmation(opts){
   if (confWhen) confWhen.textContent = opts.whenText || '—';
   if (confLocation) confLocation.textContent = opts.locationText || referralAddressText();
   if (confNote) confNote.textContent = 'Please check in at the front desk when you arrive.';
-  if (outlookLink && opts.webLink) { 
-    outlookLink.href = opts.webLink; 
-    outlookLink.style.display='inline-flex'; 
-  } else if (outlookLink) { 
-    outlookLink.removeAttribute('href'); 
-    outlookLink.style.display='none'; 
-  }
+  if (outlookLink && opts.webLink) { outlookLink.href = opts.webLink; outlookLink.style.display='inline-flex'; }
+  else if (outlookLink) { outlookLink.removeAttribute('href'); outlookLink.style.display='none'; }
 
   card.classList.add('visible');
   card.scrollIntoView({ behavior:'smooth', block:'center' });
@@ -914,64 +826,58 @@ async function handleSubmit(e){
   e.preventDefault();
   if (!validateForm()) return;
 
-  var btn = document.querySelector('button[type="submit"]');
+  var btn=document.getElementById('submitBtn');
+  var spin=document.getElementById('submitSpinner');
   if (btn) btn.disabled = true;
+  if (spin) spin.classList?.remove('hidden');
   overlay(true, 'Submitting your booking…');
 
   try{
-    // Get guardian information
-    var guardianFirst = (document.getElementById('guardianFirst')?.value||'').trim();
-    var guardianLast = (document.getElementById('guardianLast')?.value||'').trim();
-    var guardianEmail = (document.getElementById('guardianEmail')?.value||'').trim();
-    var guardianPhone = (document.getElementById('guardianPhone')?.value||'').trim();
-    
-    // Get patient information
-    var patientFirst = (document.getElementById('patientFirst')?.value||'').trim();
-    var patientLast = (document.getElementById('patientLast')?.value||'').trim();
-    var patientDOB = (document.getElementById('patientDOB')?.value||'').trim();
-    
-    // Get location
-    var location = document.querySelector('input[name="location"]:checked')?.value || '';
-    var locationText = '';
-    if (location === 'augusta') locationText = 'Augusta – 123 Main St.';
-    else if (location === 'macon') locationText = 'Macon – 456 Oak Ave.';
-    else if (location === 'telehealth') locationText = 'Telehealth (virtual)';
-    
-    // Get visit type
-    applyVisitTypeFromUI(); // ensure durationMin/stepMin set
-    
-    // Get appointment time
-    var apptTime = document.getElementById('apptTime').value;
-    var apptDateTime = new Date(apptTime);
-    
-    // Get alternate availability
-    var altAvailability = (document.getElementById('altAvailability')?.value||'').trim();
-    
-    // Get notes
-    var notes = (document.getElementById('notes')?.value||'').trim();
-    
-    // Compute start/end in local clinic tz (server will store w/ timeZone)
-    var startDT = apptDateTime.toISOString().slice(0, 19).replace('T', ' ');
-    var endDT = new Date(apptDateTime.getTime() + durationMin * 60000).toISOString().slice(0, 19).replace('T', ' ');
+    var first=(document.getElementById('firstName')?.value||'').trim();
+    var last =(document.getElementById('lastName')?.value||'').trim();
+    var email=(document.getElementById('email')?.value||'').trim();
+    var phone=(document.getElementById('phone')?.value||'').trim();
 
-    // Subject + body
+    // Stick a little convenience for prefill next time
+    try {
+      localStorage.setItem('sw_client_name', first+' '+last);
+      localStorage.setItem('sw_client_phone', phone);
+    } catch {}
+
+    var over = document.querySelector('input[name="over18"]:checked')?.value || 'yes';
+    var guardian = null;
+    if (over === 'no'){
+      guardian = {
+        name: (document.getElementById('guardianName')?.value||'').trim(),
+        phone:(document.getElementById('guardianPhone')?.value||'').trim()
+      };
+    }
+
+    applyVisitTypeFromUI(); // ensure durationMin/stepMin set
+
+    // Compute start/end in local clinic tz (server will store w/ timeZone)
+    var stH = selectedSlot.start.hour, stM = selectedSlot.start.minute;
+    var endHM = addMinutesToHM(stH, stM, durationMin);
+
+    var startDT = ymdhms(selectedSlot.y, selectedSlot.m, selectedSlot.d, stH, stM);
+    var endDT   = ymdhms(selectedSlot.y, selectedSlot.m, selectedSlot.d, endHM.hour, endHM.minute);
+
+    // Subject + body (no provider names shown)
     var subject = 'Physician visit – ' + (visitType==='first' ? 'First-Time (60m)' : 'Follow-Up (30m)');
-    var addressText = location === 'telehealth' ? 'Virtual Appointment' : referralAddressText();
+    var addressText = referralAddressText();
     var bodyParts = [
-      'Appointment for ' + patientFirst + ' ' + patientLast,
-      'Date of Birth: ' + patientDOB,
-      'When: ' + apptDateTime.toLocaleString(),
-      'Where: ' + locationText,
-      'Contact: ' + guardianPhone,
-      'Guardian: ' + guardianFirst + ' ' + guardianLast + ' (' + guardianEmail + ')',
-      '',
-      'Alternate Availability: ' + (altAvailability || 'None provided'),
-      'Notes: ' + (notes || 'None provided'),
+      'In-office physician visit for ' + first + ' ' + last + '.',
+      'When: ' + friendlyStartFromSelected() + ' (' + CONFIG.TIMEZONE + ')',
+      'Where: ' + (addressText || CONFIG.CLINIC_NAME),
+      'Check-in: Please check in at the front desk when you arrive.',
+      'Contact: ' + phone,
       '',
       'Need to cancel or reschedule? Reply to this message or call the office.',
-      'You\'ll receive reminders 48h and 24h before your appointment.'
+      'You’ll receive reminders 48h and 24h before your appointment.'
     ];
-    
+    if (over === 'no' && guardian){
+      bodyParts.splice(3,0,'Guardian: ' + guardian.name + ' (' + guardian.phone + ')');
+    }
     var body = bodyParts.join('\n');
 
     var payload = {
@@ -979,20 +885,14 @@ async function handleSubmit(e){
       body: body,
       start: { dateTime: startDT, timeZone: CONFIG.TIMEZONE },
       end:   { dateTime: endDT,   timeZone: CONFIG.TIMEZONE },
-      location: { displayName: locationText },
-      attendees: [{ address: guardianEmail, name: guardianFirst+' '+guardianLast, type:'required' }],
+      expectedDate: selectedSlot.y + '-' + p2(selectedSlot.m) + '-' + p2(selectedSlot.d),
+      location: { displayName: 'In-Office — ' + (addressText || CONFIG.CLINIC_NAME) },
+      attendees: [{ address: email, name: first+' '+last, type:'required' }],
       allowNewTimeProposals: true,
       transactionId: generateUUID(),
       visitType: visitType,           // 'first' | 'followup' (for your backend if you want it)
-      guardian: {
-        name: guardianFirst + ' ' + guardianLast,
-        email: guardianEmail,
-        phone: guardianPhone
-      },
-      patient: {
-        name: patientFirst + ' ' + patientLast,
-        dob: patientDOB
-      }
+      over18: over,
+      guardian: guardian
     };
 
     var url = withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY);
@@ -1012,8 +912,8 @@ async function handleSubmit(e){
     // UI success + confirmation card
     showSuccess();
     showConfirmation({
-      whenText: apptDateTime.toLocaleString(),
-      locationText: locationText,
+      whenText: friendlyStartFromSelected(),
+      locationText: addressText,
       webLink: result?.webLink || null
     });
 
@@ -1022,12 +922,13 @@ async function handleSubmit(e){
     showError('There was an error booking your appointment. Please try again or call the office.');
   }finally{
     if (btn) btn.disabled=false;
+    if (spin) spin.classList?.add('hidden');
     overlay(false);
   }
 }
 
 /* -------------------------
-   Misc: Prefill + phone mask
+   Misc: Prefill + guardian toggle + phone mask
 -------------------------- */
 function formatPhoneInput(el){
   if (!el) return;
@@ -1039,6 +940,25 @@ function formatPhoneInput(el){
   });
 }
 
+function toggleGuardianSection(){
+  var over = document.querySelector('input[name="over18"]:checked');
+  var sec = document.getElementById('guardianInfo');
+  if (!sec) return;
+  if (over && over.value === 'no'){
+    sec.classList.remove('hidden');
+    var gn=document.getElementById('guardianName');
+    var gp=document.getElementById('guardianPhone');
+    if (gn) gn.required = true;
+    if (gp) gp.required = true;
+  } else {
+    sec.classList.add('hidden');
+    var gn=document.getElementById('guardianName');
+    var gp=document.getElementById('guardianPhone');
+    if (gn){ gn.required = false; gn.value=''; }
+    if (gp){ gp.required = false; gp.value=''; }
+  }
+}
+
 function prefillFromStorageOrQuery(){
   try {
     var nm = getQueryParam('name') || localStorage.getItem('sw_client_name');
@@ -1047,11 +967,11 @@ function prefillFromStorageOrQuery(){
       var parts = nm.trim().split(' ');
       var first = parts.shift() || '';
       var last  = parts.join(' ') || '';
-      if (document.getElementById('guardianFirst')) document.getElementById('guardianFirst').value = first;
-      if (document.getElementById('guardianLast'))  document.getElementById('guardianLast').value  = last;
+      if (document.getElementById('firstName')) document.getElementById('firstName').value = first;
+      if (document.getElementById('lastName'))  document.getElementById('lastName').value  = last;
     }
-    if (ph && document.getElementById('guardianPhone')){
-      document.getElementById('guardianPhone').value = ph;
+    if (ph && document.getElementById('phone')){
+      document.getElementById('phone').value = ph;
     }
   } catch {}
 }
@@ -1061,26 +981,31 @@ function prefillFromStorageOrQuery(){
 -------------------------- */
 document.addEventListener('DOMContentLoaded', function () {
   // Phone masks
+  formatPhoneInput(document.getElementById('phone'));
   formatPhoneInput(document.getElementById('guardianPhone'));
 
+  // Over 18 radios
+  document.querySelectorAll('input[name="over18"]').forEach(function(r){
+    r.addEventListener('change', toggleGuardianSection);
+  });
+
   // First-time vs follow-up radios: update visitType and re-render chips if we already loaded windows
-  document.querySelectorAll('input[name="visitType"]').forEach(function(r){
+  document.querySelectorAll('input[name="firstTime"]').forEach(function(r){
     r.addEventListener('change', function(){
       applyVisitTypeFromUI();
       if (availableSlots.length){ displaySlots(availableSlots); }
     });
   });
 
-  // Load slots when visit type is selected
-  document.querySelectorAll('input[name="visitType"]').forEach(function(r){
-    r.addEventListener('change', loadAvailableSlots);
-  });
+  // Load slots
+  document.getElementById('loadSlotsBtn')?.addEventListener('click', loadAvailableSlots);
 
   // Submit
   document.getElementById('physForm')?.addEventListener('submit', handleSubmit);
 
   // Clear (optional button)
-  document.querySelector('button[type="reset"]')?.addEventListener('click', function(){
+  document.getElementById('clearFormBtn')?.addEventListener('click', function(){
+    document.getElementById('physForm')?.reset();
     selectedSlot = null;
     availableSlots = [];
     visitType = null;
@@ -1089,12 +1014,17 @@ document.addEventListener('DOMContentLoaded', function () {
     var ts = document.getElementById('timeSlots'); if (ts) ts.innerHTML='';
     hideMessages();
     var card = document.getElementById('confirmationCard'); if (card) card.classList.remove('visible');
+    toggleGuardianSection();
   });
 
   // Prefill
   prefillFromStorageOrQuery();
+
+  // Initialize guardian section hidden
+  toggleGuardianSection();
 });
 </script>
+
 </body>
 
 </html>
