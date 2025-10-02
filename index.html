@@ -703,7 +703,7 @@ input[type="email"]{
     </div>
   </div>
 
-  <script>
+ <script>
 /* =========================
    Still Waters – Physician Scheduler (Two Flows)
    JS ONLY — drop-in replacement
@@ -719,224 +719,140 @@ var CONFIG = {
   CLINIC_ADDRESS: '3711 Executive Center Dr. Augusta, GA 30907 '
 };
 
-/* -------------------------
-   State
--------------------------- */
-var slotsCache = null; // cache of parsed windows after first load
+/* ------------------------- State -------------------------- */
+var slotsCache = null;
 var selectedSlot = { self: null, guardian: null };
 var visitPlan = {
-  self:     { type: null, durationMin: 30, stepMin: 15 }, // first => 60/30
+  self:     { type: null, durationMin: 30, stepMin: 15 },
   guardian: { type: null, durationMin: 30, stepMin: 15 }
 };
 
-/* -------------------------
-   Utilities
--------------------------- */
+/* ------------------------- Utilities -------------------------- */
 function withKey(url, key) {
   if (!key) return url;
-  try {
-    var u = new URL(url);
-    u.searchParams.set('code', key);
-    return u.toString();
-  } catch {
-    var sep = url.indexOf('?') >= 0 ? '&' : '?';
-    return url + sep + 'code=' + encodeURIComponent(key);
-  }
+  try { var u = new URL(url); u.searchParams.set('code', key); return u.toString(); }
+  catch { return url + (url.includes('?') ? '&' : '?') + 'code=' + encodeURIComponent(key); }
 }
 function p2(n){ return (n<10?'0':'')+n; }
-function generateUUID(){
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){
-    var r=Math.random()*16|0, v=c==='x'?r:(r&0x3)|0x8;
-    return v.toString(16).toUpperCase();
-  });
-}
-function convertTo24Hour(timeStr){
-  var t=timeStr.trim().split(' ');
-  var hm=t[0].split(':'), h=parseInt(hm[0],10), m=parseInt(hm[1],10), p=t[1];
-  if(p==='PM'&&h!==12)h+=12;
-  if(p==='AM'&&h===12)h=0;
-  return {hours:h, minutes:m};
-}
+function generateUUID(){ return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=Math.random()*16|0,v=c==='x'?r:(r&0x3)|0x8;return v.toString(16).toUpperCase();});}
+function convertTo24Hour(s){ var t=s.trim().split(' '), hm=t[0].split(':'), h=+hm[0], m=+hm[1], p=t[1]; if(p==='PM'&&h!==12)h+=12; if(p==='AM'&&h===12)h=0; return {hours:h, minutes:m}; }
 function hmToMinutes(h,m){ return h*60+m; }
 function minutesToHM(total){ return {hour: Math.floor(total/60), minute: total%60}; }
-function addMinutesToHM(h, m, delta){
-  var total = h*60 + m + delta;
-  return { hour: Math.floor(total/60), minute: total%60 };
-}
-function t12fmt(h, m){
-  var ap=h>=12?'PM':'AM';
-  var hh=h%12===0?12:(h%12);
-  return hh + ':' + p2(m) + ' ' + ap;
-}
+function addMinutesToHM(h, m, d){ var total=h*60+m+d; return {hour:Math.floor(total/60), minute:total%60}; }
+function t12fmt(h, m){ var ap=h>=12?'PM':'AM', hh=h%12===0?12:(h%12); return hh+':'+p2(m)+' '+ap; }
 function ymdhms(y,m,d,h,mi){ return y+'-'+p2(m)+'-'+p2(d)+'T'+p2(h)+':'+p2(mi)+':00'; }
-function localDow(y,m,d){
-  var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  return days[new Date(y, m-1, d).getDay()];
-}
-function getQueryParam(name){
-  var m = new RegExp('[?&]'+name+'=([^&#]*)').exec(window.location.search);
-  return m ? decodeURIComponent(m[1].replace(/\+/g,'%20')) : null;
-}
-function referralAddressText(){
-  return getQueryParam('address') || CONFIG.CLINIC_ADDRESS || '';
-}
-function calcAgeFromDOBStr(dobStr){
-  var d = new Date(dobStr);
-  if (isNaN(d)) return null;
-  var t = new Date();
-  var a = t.getFullYear() - d.getFullYear();
-  var m = t.getMonth() - d.getMonth();
-  if (m < 0 || (m === 0 && t.getDate() < d.getDate())) a--;
-  return a;
-}
+function localDow(y,m,d){ return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(y,m-1,d).getDay()]; }
+function getQueryParam(name){ var m=new RegExp('[?&]'+name+'=([^&#]*)').exec(window.location.search); return m?decodeURIComponent(m[1].replace(/\+/g,'%20')):null; }
+function referralAddressText(){ return getQueryParam('address') || CONFIG.CLINIC_ADDRESS || ''; }
+function calcAgeFromDOBStr(dobStr){ var d=new Date(dobStr); if(isNaN(d))return null; var t=new Date(); var a=t.getFullYear()-d.getFullYear(); var m=t.getMonth()-d.getMonth(); if(m<0||(m===0&&t.getDate()<d.getDate()))a--; return a; }
 
-/* -------------------------
-   Parse free slots: "15 Sep 2025, 03:40 PM - 05:00 PM"
--------------------------- */
+/* ------------------------- Slot parsing -------------------------- */
 function parseSlotString(slotStr){
   var parts = slotStr.split(', ');
-  if (parts.length < 2) throw new Error('Unexpected slot format: '+slotStr);
   var datePart = parts[0], timePart = parts[1];
   var [dayStr, monStr, yearStr] = datePart.split(' ');
-  var day = parseInt(dayStr, 10), year = parseInt(yearStr, 10);
+  var day = parseInt(dayStr,10), year = parseInt(yearStr,10);
   var monthMap = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
-  var monthNum = monthMap[monStr]; if (!monthNum) throw new Error('Unknown month');
+  var monthNum = monthMap[monStr];
   var [startStr, endStr] = timePart.split(' - ');
-  var start24 = convertTo24Hour(startStr);
-  var end24   = convertTo24Hour(endStr);
-  return {
-    y: year, m: monthNum, d: day,
-    dateStr: datePart,
-    startMin: hmToMinutes(start24.hours, start24.minutes),
-    endMin:   hmToMinutes(end24.hours,   end24.minutes)
-  };
+  var start24 = convertTo24Hour(startStr), end24 = convertTo24Hour(endStr);
+  return { y:year, m:monthNum, d:day, dateStr:datePart, startMin:hmToMinutes(start24.hours,start24.minutes), endMin:hmToMinutes(end24.hours,end24.minutes) };
 }
 function groupByDate(slots){
   var map = {};
   slots.forEach(function(s){
-    var key = s.y + '-' + p2(s.m) + '-' + p2(s.d);
-    if (!map[key]) map[key] = { y:s.y, m:s.m, d:s.d, dateStr:s.dateStr, windows:[] };
-    map[key].windows.push({ startMin: s.startMin, endMin: s.endMin });
+    var key = s.y+'-'+p2(s.m)+'-'+p2(s.d);
+    if(!map[key]) map[key] = { y:s.y, m:s.m, d:s.d, dateStr:s.dateStr, windows:[] };
+    map[key].windows.push({ startMin:s.startMin, endMin:s.endMin });
   });
   return map;
 }
 
-/* -------------------------
-   Visit type per-flow
--------------------------- */
+/* ------------------------- Visit type per-flow -------------------------- */
 function applyVisitType(flow){
   var sel = document.querySelector('input[name="'+(flow==='self'?'firstTimeSelf':'firstTimeGuardian')+'"]:checked');
-  if (!sel){ visitPlan[flow].type = null; return; }
-  visitPlan[flow].type = (sel.value === 'yes') ? 'first' : 'followup';
-  if (visitPlan[flow].type === 'first'){ visitPlan[flow].durationMin = 60; visitPlan[flow].stepMin = 30; }
-  else { visitPlan[flow].durationMin = 30; visitPlan[flow].stepMin = 15; }
+  visitPlan[flow].type = sel ? (sel.value==='yes'?'first':'followup') : null;
+  if (visitPlan[flow].type==='first'){ visitPlan[flow].durationMin=60; visitPlan[flow].stepMin=30; }
+  else { visitPlan[flow].durationMin=30; visitPlan[flow].stepMin=15; }
 }
 
-/* -------------------------
-   UI helpers
--------------------------- */
-function showSuccess(){
-  hideMessages();
-  var el=document.getElementById('successMessage');
-  if (el){ el.style.display='block'; setTimeout(function(){ el.style.display='none'; }, 5000); }
-}
-function showError(msg){
-  hideMessages();
-  var el=document.getElementById('errorMessage');
-  if (el){ el.textContent = msg || 'Something went wrong.'; el.style.display='block'; setTimeout(function(){ el.style.display='none'; }, 6000); }
-}
-function hideMessages(){
-  var s=document.getElementById('successMessage'), e=document.getElementById('errorMessage');
-  if (s) s.style.display='none';
-  if (e) e.style.display='none';
-}
-function overlay(on, text){
-  var ov=document.getElementById('loadingOverlay');
-  var msg=document.getElementById('overlayMessage');
-  if (!ov) return;
-  if (typeof text==='string' && msg) msg.textContent = text;
-  ov.classList.toggle('active', !!on);
-}
+/* ------------------------- UI helpers -------------------------- */
+function showSuccess(){ hideMessages(); var el=document.getElementById('successMessage'); if(el){ el.style.display='block'; setTimeout(function(){ el.style.display='none'; }, 5000);} }
+function showError(msg){ hideMessages(); var el=document.getElementById('errorMessage'); if(el){ el.textContent=msg||'Something went wrong.'; el.style.display='block'; setTimeout(function(){ el.style.display='none'; }, 6000);} }
+function hideMessages(){ var s=document.getElementById('successMessage'), e=document.getElementById('errorMessage'); if(s)s.style.display='none'; if(e)e.style.display='none'; }
+function overlay(on, text){ var ov=document.getElementById('loadingOverlay'); var msg=document.getElementById('overlayMessage'); if(!ov)return; if(typeof text==='string'&&msg) msg.textContent=text; ov.classList.toggle('active', !!on); }
 
-/* -------------------------
-   Slot rendering per-flow
--------------------------- */
+/* ------------------------- Render slots (FIXED selection) -------------------------- */
 function displaySlotsForFlow(flow, slots){
-  var containerId = (flow==='self') ? 'timeSlotsSelf' : 'timeSlotsGuardian';
-  var container = document.getElementById(containerId);
+  const containerId = (flow==='self') ? 'timeSlotsSelf' : 'timeSlotsGuardian';
+  const container = document.getElementById(containerId);
   if (!container) return;
   container.innerHTML = '';
   selectedSlot[flow] = null;
 
   applyVisitType(flow);
-  if (!visitPlan[flow].type){
-    container.innerHTML = '<p>Please choose if this is your first visit or a follow-up.</p>';
-    return;
-  }
-  if (!slots || !slots.length){
-    container.innerHTML = '<p>No available slots returned by the server. Please check back later.</p>';
-    return;
-  }
+  if (!visitPlan[flow].type){ container.innerHTML = '<p>Please choose if this is your first visit or a follow-up.</p>'; return; }
+  if (!slots || !slots.length){ container.innerHTML = '<p>No available slots returned by the server. Please check back later.</p>'; return; }
 
-  var parsed = (typeof slots[0] === 'string' || !('startMin' in slots[0])) ? slots.map(parseSlotString) : slots.slice();
-  var byDate = groupByDate(parsed);
-  var keys = Object.keys(byDate).sort();
+  const parsed = (typeof slots[0] === 'string' || !('startMin' in slots[0])) ? slots.map(parseSlotString) : slots.slice();
+  const byDate = groupByDate(parsed);
+  const keys = Object.keys(byDate).sort();
   if (!keys.length){ container.innerHTML = '<p>No availability found.</p>'; return; }
 
   keys.forEach(function(key){
-    var dayData = byDate[key];
-    var card = document.createElement('div');
+    const dayData = byDate[key];
+
+    const card = document.createElement('div');
     card.className = 'time-slot';
 
-    var header = document.createElement('div');
+    const header = document.createElement('div');
     header.className = 'date';
-    header.textContent = localDow(dayData.y, dayData.m, dayData.d) + ' ' + dayData.dateStr;
+    header.textContent = localDow(dayData.y, dayData.m, dayData.d)+' '+dayData.dateStr;
 
-    var grid = document.createElement('div');
+    const grid = document.createElement('div');
     grid.className = 'slot-grid';
 
-    var emitted = new Set();
-    var need = visitPlan[flow].durationMin;
-    var step = visitPlan[flow].stepMin;
+    const emitted = new Set();
+    const need = visitPlan[flow].durationMin;
+    const step = visitPlan[flow].stepMin;
 
     dayData.windows.forEach(function(w){
-      for (var m = w.startMin; m + need <= w.endMin; m += step){
+      for (let m=w.startMin; m+need<=w.endMin; m+=step){
         if (emitted.has(m)) continue;
         emitted.add(m);
-        var startHM = minutesToHM(m);
-        var chip = document.createElement('div');
+
+        const startHM = minutesToHM(m);
+        const chip = document.createElement('button');
+        chip.type = 'button';
         chip.className = 'slot-chip';
-        chip.setAttribute('role','button');
-        chip.setAttribute('tabindex','0');
         chip.textContent = t12fmt(startHM.hour, startHM.minute);
 
-        chip.addEventListener('click', function(mm){
+        chip.addEventListener('click', (function(mm, day){
           return function(){
-            grid.parentElement.querySelectorAll('.slot-chip').forEach(function(el){ el.classList.remove('selected'); });
-            chip.classList.add('selected');
+            // unselect any previously selected chip in THIS FLOW ONLY
+            container.querySelectorAll('.slot-chip.selected').forEach(function(el){ el.classList.remove('selected'); });
+            this.classList.add('selected');
             selectedSlot[flow] = {
-              y: dayData.y, m: dayData.m, d: dayData.d,
+              y: day.y, m: day.m, d: day.d,
               start: minutesToHM(mm),
               durationMin: visitPlan[flow].durationMin,
               stepMin: visitPlan[flow].stepMin
             };
           };
-        }(m));
+        })(m, dayData));
 
         chip.addEventListener('keydown', function(ev){
-          if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); chip.click(); }
+          if (ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); chip.click(); }
         });
 
         grid.appendChild(chip);
       }
     });
 
-    if (grid.children.length === 0){
-      var emptyMsg = document.createElement('div');
-      emptyMsg.style.color = 'var(--muted)';
-      emptyMsg.textContent = (visitPlan[flow].type==='first')
-        ? 'No 60-minute starts (30-min steps) fit today.'
-        : 'No 30-minute starts (15-min steps) fit today.';
+    if (!grid.children.length){
+      const emptyMsg = document.createElement('div');
+      emptyMsg.style.color='var(--muted)';
+      emptyMsg.textContent = (visitPlan[flow].type==='first') ? 'No 60-minute starts (30-min steps) fit today.' : 'No 30-minute starts (15-min steps) fit today.';
       grid.appendChild(emptyMsg);
     }
 
@@ -946,40 +862,30 @@ function displaySlotsForFlow(flow, slots){
   });
 }
 
-/* -------------------------
-   Fetch free slots (once, cached)
--------------------------- */
+/* ------------------------- Fetch slots (cached) -------------------------- */
 async function ensureSlots(){
   if (slotsCache) return slotsCache;
   overlay(true, 'Loading available times…');
-  var url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
+  const url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
   try{
-    var resp = await fetch(url, { method:'GET', headers:{'Accept':'application/json'} });
-    var text = await resp.text();
+    const resp = await fetch(url, { method:'GET', headers:{'Accept':'application/json'} });
+    const text = await resp.text();
     if (!resp.ok) throw new Error('Failed to load slots ('+resp.status+')');
-    var data = text ? JSON.parse(text) : {};
-    var list = Array.isArray(data) ? data
-             : (Array.isArray(data.free_slots) ? data.free_slots
-             : (Array.isArray(data.freeSlots) ? data.freeSlots
-             : (Array.isArray(data.slots) ? data.slots : [])));
+    const data = text ? JSON.parse(text) : {};
+    const list = Array.isArray(data) ? data
+               : (Array.isArray(data.free_slots) ? data.free_slots
+               : (Array.isArray(data.freeSlots) ? data.freeSlots
+               : (Array.isArray(data.slots) ? data.slots : [])));
     slotsCache = list.map(parseSlotString);
     return slotsCache;
-  }catch(e){
-    console.error(e);
-    showError('Failed to load available appointment times. Please try again.');
-    return [];
-  }finally{
-    overlay(false);
-  }
+  }catch(e){ console.error(e); showError('Failed to load available appointment times. Please try again.'); return []; }
+  finally{ overlay(false); }
 }
 
-/* -------------------------
-   Individuals (guardian flow)
--------------------------- */
+/* ------------------------- Household helpers -------------------------- */
 function addIndividualCard(){
-  var list = document.getElementById('individualsList');
-  if (!list) return;
-  var div = document.createElement('div');
+  const list = document.getElementById('individualsList'); if (!list) return;
+  const div = document.createElement('div');
   div.className = 'person-card';
   div.innerHTML = `
     <div class="person-header">
@@ -987,427 +893,329 @@ function addIndividualCard(){
       <button type="button" class="btn-remove" aria-label="Remove individual">Remove</button>
     </div>
     <div class="form-row">
-      <div class="form-group">
-        <label>First Name <span class="required">*</span></label>
-        <input type="text" />
-      </div>
-      <div class="form-group">
-        <label>Last Name <span class="required">*</span></label>
-        <input type="text" />
-      </div>
+      <div class="form-group"><label>First Name <span class="required">*</span></label><input type="text" /></div>
+      <div class="form-group"><label>Last Name <span class="required">*</span></label><input type="text" /></div>
     </div>
-    <div class="form-group">
-      <label>BirthDate <span class="required">*</span></label>
-      <input type="date" />
-    </div>
+    <div class="form-group"><label>BirthDate <span class="required">*</span></label><input type="date" /></div>
   `;
   div.querySelector('.btn-remove').addEventListener('click', function(){ div.remove(); });
   list.appendChild(div);
 }
 function collectIndividuals(){
-  var rows = Array.from(document.querySelectorAll('#individualsList .person-card'));
-  return rows.map(function(row){
-    var inputs = row.querySelectorAll('input');
-    var first = (inputs[0]?.value || '').trim();
-    var last  = (inputs[1]?.value || '').trim();
-    var dob   = (inputs[2]?.value || '').trim();
-    var age = calcAgeFromDOBStr(dob);
-    return { first:first, last:last, dob:dob, age:age, under18: (age!==null ? age < 18 : null) };
+  return Array.from(document.querySelectorAll('#individualsList .person-card')).map(function(row){
+    const inputs = row.querySelectorAll('input');
+    const first=(inputs[0]?.value||'').trim();
+    const last =(inputs[1]?.value||'').trim();
+    const dob  =(inputs[2]?.value||'').trim();
+    const age = calcAgeFromDOBStr(dob);
+    return { first:first, last:last, dob:dob, age:age, under18:(age!==null?age<18:null) };
   });
 }
 
-/* -------------------------
-   Validation
--------------------------- */
+/* ------------------------- Validation -------------------------- */
 function getCheckedLocation(flow){
-  var a = document.getElementById(flow==='self'?'selfLocAugusta':'guardLocAugusta');
-  var m = document.getElementById(flow==='self'?'selfLocMacon':'guardLocMacon');
-  var picked = [];
-  if (a && a.checked) picked.push(a.value);
-  if (m && m.checked) picked.push(m.value);
+  const a = document.getElementById(flow==='self'?'selfLocAugusta':'guardLocAugusta');
+  const m = document.getElementById(flow==='self'?'selfLocMacon':'guardLocMacon');
+  const picked = []; if(a&&a.checked)picked.push(a.value); if(m&&m.checked)picked.push(m.value);
   if (!picked.length) return { ok:false, msg:'Please select a preferred location.' };
-  if (picked.length > 1) return { ok:false, msg:'Please select only one location.' };
-  return { ok:true, value: picked[0] };
+  if (picked.length>1) return { ok:false, msg:'Please select only one location.' };
+  return { ok:true, value:picked[0] };
 }
-
 function validateSelfFlow(){
-  var selfToggle = document.getElementById('selfConfirm18');
-  if (!selfToggle || !selfToggle.checked){ showError('Please confirm you are an individual 18+.'); return false; }
-
-  var first = (document.getElementById('selfFirstName')?.value||'').trim();
-  var last  = (document.getElementById('selfLastName')?.value||'').trim();
-  var email = (document.getElementById('selfEmail')?.value||'').trim();
-  var phone = (document.getElementById('selfPhone')?.value||'').trim();
-  var dob   = (document.getElementById('selfDob')?.value||'').trim();
-
-  if (!first || !last){ showError('Please enter your first and last name.'); return false; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showError('Please enter a valid email.'); return false; }
-  if (!phone || phone.replace(/\D/g,'').length < 7){ showError('Please enter a valid phone number.'); return false; }
-  if (!dob){ showError('Please select your birth date.'); return false; }
-  var age = calcAgeFromDOBStr(dob); if (age===null || age < 18){ showError('This flow is for individuals 18+.'); return false; }
-
-  applyVisitType('self');
-  if (!visitPlan.self.type){ showError('Please select First-Time or Follow-Up.'); return false; }
-  if (!selectedSlot.self){ showError('Please choose an available time.'); return false; }
-
-  var loc = getCheckedLocation('self'); if (!loc.ok){ showError(loc.msg); return false; }
-
-  if (!document.getElementById('selfConsent')?.checked){ showError('Please consent to reminders.'); return false; }
-  if (!document.getElementById('selfEmergency')?.checked){ showError('Please confirm you are not experiencing an emergency.'); return false; }
+  if (!document.getElementById('selfConfirm18')?.checked){ showError('Please confirm you are an individual 18+.'); return false; }
+  const first=(document.getElementById('selfFirstName')?.value||'').trim();
+  const last =(document.getElementById('selfLastName')?.value||'').trim();
+  const email=(document.getElementById('selfEmail')?.value||'').trim();
+  const phone=(document.getElementById('selfPhone')?.value||'').trim();
+  const dob  =(document.getElementById('selfDob')?.value||'').trim();
+  if(!first||!last){ showError('Please enter your first and last name.'); return false; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showError('Please enter a valid email.'); return false; }
+  if(phone.replace(/\D/g,'').length<7){ showError('Please enter a valid phone number.'); return false; }
+  const age=calcAgeFromDOBStr(dob); if(age===null||age<18){ showError('This flow is for individuals 18+.'); return false; }
+  applyVisitType('self'); if(!visitPlan.self.type){ showError('Please select First-Time or Follow-Up.'); return false; }
+  if(!selectedSlot.self){ showError('Please choose an available time.'); return false; }
+  const loc=getCheckedLocation('self'); if(!loc.ok){ showError(loc.msg); return false; }
+  if(!document.getElementById('selfConsent')?.checked){ showError('Please consent to reminders.'); return false; }
+  if(!document.getElementById('selfEmergency')?.checked){ showError('Please confirm you are not experiencing an emergency.'); return false; }
   return true;
 }
-
 function validateGuardianFlow(){
-  var gToggle = document.getElementById('guardianConfirm18');
-  if (!gToggle || !gToggle.checked){ showError('Please confirm you are a parent/guardian 18+.'); return false; }
-
-  var gf = (document.getElementById('guardFirstName')?.value||'').trim();
-  var gl = (document.getElementById('guardLastName')?.value||'').trim();
-  var ge = (document.getElementById('guardEmail')?.value||'').trim();
-  var gp = (document.getElementById('guardPhone')?.value||'').trim();
-  if (!gf || !gl){ showError('Please enter parent/guardian name.'); return false; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ge)){ showError('Please enter a valid parent/guardian email.'); return false; }
-  if (!gp || gp.replace(/\D/g,'').length < 7){ showError('Please enter a valid parent/guardian phone.'); return false; }
-
-  var people = collectIndividuals();
-  if (people.length === 0){ showError('Please add at least one individual.'); return false; }
-  for (var i=0;i<people.length;i++){
-    if (!people[i].first || !people[i].last || !people[i].dob){ showError('Please complete each individual’s first name, last name, and DOB.'); return false; }
-  }
-
-  applyVisitType('guardian');
-  if (!visitPlan.guardian.type){ showError('Please select First-Time or Follow-Up.'); return false; }
-  if (!selectedSlot.guardian){ showError('Please choose an available time.'); return false; }
-
-  var loc = getCheckedLocation('guardian'); if (!loc.ok){ showError(loc.msg); return false; }
-
-  if (!document.getElementById('guardConsent')?.checked){ showError('Please consent to reminders.'); return false; }
-  if (!document.getElementById('guardEmergency')?.checked){ showError('Please confirm you are not experiencing an emergency.'); return false; }
+  if (!document.getElementById('guardianConfirm18')?.checked){ showError('Please confirm you are a parent/guardian 18+.'); return false; }
+  const gf=(document.getElementById('guardFirstName')?.value||'').trim();
+  const gl=(document.getElementById('guardLastName')?.value||'').trim();
+  const ge=(document.getElementById('guardEmail')?.value||'').trim();
+  const gp=(document.getElementById('guardPhone')?.value||'').trim();
+  if(!gf||!gl){ showError('Please enter parent/guardian name.'); return false; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ge)){ showError('Please enter a valid parent/guardian email.'); return false; }
+  if(gp.replace(/\D/g,'').length<7){ showError('Please enter a valid parent/guardian phone.'); return false; }
+  const people = collectIndividuals();
+  if(people.length===0){ showError('Please add at least one individual.'); return false; }
+  for (let i=0;i<people.length;i++){ if(!people[i].first||!people[i].last||!people[i].dob){ showError('Please complete each individual’s first name, last name, and DOB.'); return false; } }
+  applyVisitType('guardian'); if(!visitPlan.guardian.type){ showError('Please select First-Time or Follow-Up.'); return false; }
+  if(!selectedSlot.guardian){ showError('Please choose an available time.'); return false; }
+  const loc=getCheckedLocation('guardian'); if(!loc.ok){ showError(loc.msg); return false; }
+  if(!document.getElementById('guardConsent')?.checked){ showError('Please consent to reminders.'); return false; }
+  if(!document.getElementById('guardEmergency')?.checked){ showError('Please confirm you are not experiencing an emergency.'); return false; }
   return true;
 }
 
-/* -------------------------
-   Confirmation (reuse your card)
--------------------------- */
+/* ------------------------- Confirmation -------------------------- */
 function friendlyStartFromSelected(flow){
-  var s = selectedSlot[flow].start, y=selectedSlot[flow].y, m=selectedSlot[flow].m, d=selectedSlot[flow].d;
-  var mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const s=selectedSlot[flow].start, y=selectedSlot[flow].y, m=selectedSlot[flow].m, d=selectedSlot[flow].d;
+  const mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return d+' '+mons[m-1]+' '+y+', '+t12fmt(s.hour, s.minute);
 }
 function showConfirmation(opts){
-  var card = document.getElementById('confirmationCard'); if (!card) return;
-  var confWhen = document.getElementById('confWhen');
-  var confLocation = document.getElementById('confLocation');
-  var confNote = document.getElementById('confNote');
-  var outlookLink = document.getElementById('confOutlookLink');
+  const card=document.getElementById('confirmationCard'); if(!card)return;
+  const confWhen=document.getElementById('confWhen');
+  const confLocation=document.getElementById('confLocation');
+  const confNote=document.getElementById('confNote');
+  const outlookLink=document.getElementById('confOutlookLink');
 
-  if (confWhen) confWhen.textContent = opts.whenText || '—';
-  if (confLocation) confLocation.textContent = opts.locationText || referralAddressText();
-  if (confNote) confNote.textContent = 'Please check in at the front desk when you arrive.';
-  if (outlookLink && opts.webLink) { outlookLink.href = opts.webLink; outlookLink.style.display='inline-flex'; }
-  else if (outlookLink) { outlookLink.removeAttribute('href'); outlookLink.style.display='none'; }
+  if(confWhen) confWhen.textContent = opts.whenText || '—';
+  if(confLocation) confLocation.textContent = opts.locationText || referralAddressText();
+  if(confNote) confNote.textContent = 'Please check in at the front desk when you arrive.';
+  // Always hide Outlook link as requested
+  if (outlookLink){ outlookLink.removeAttribute('href'); outlookLink.style.display='none'; }
 
   card.classList.add('visible');
   card.scrollIntoView({ behavior:'smooth', block:'center' });
 }
 
-/* -------------------------
-   Submit -> Create event
--------------------------- */
+/* ------------------------- Submit -> Create event -------------------------- */
 async function submitSelf(){
-  var first=(document.getElementById('selfFirstName')?.value||'').trim();
-  var last =(document.getElementById('selfLastName')?.value||'').trim();
-  var email=(document.getElementById('selfEmail')?.value||'').trim();
-  var phone=(document.getElementById('selfPhone')?.value||'').trim();
-  var dob  =(document.getElementById('selfDob')?.value||'').trim();
-  var loc  = getCheckedLocation('self').value;
+  const first=(document.getElementById('selfFirstName')?.value||'').trim();
+  const last =(document.getElementById('selfLastName')?.value||'').trim();
+  const email=(document.getElementById('selfEmail')?.value||'').trim();
+  const phone=(document.getElementById('selfPhone')?.value||'').trim();
+  const dob  =(document.getElementById('selfDob')?.value||'').trim();
+  const loc  = getCheckedLocation('self').value;
 
-  try { localStorage.setItem('sw_client_name', first+' '+last); localStorage.setItem('sw_client_phone', phone); } catch {}
+  try{ localStorage.setItem('sw_client_name', first+' '+last); localStorage.setItem('sw_client_phone', phone); }catch{}
 
   applyVisitType('self');
-  var st = selectedSlot.self.start, dur = visitPlan.self.durationMin;
-  var endHM = addMinutesToHM(st.hour, st.minute, dur);
-  var startDT = ymdhms(selectedSlot.self.y, selectedSlot.self.m, selectedSlot.self.d, st.hour, st.minute);
-  var endDT   = ymdhms(selectedSlot.self.y, selectedSlot.self.m, selectedSlot.self.d, endHM.hour, endHM.minute);
+  const st=selectedSlot.self.start, dur=visitPlan.self.durationMin;
+  const endHM = addMinutesToHM(st.hour, st.minute, dur);
+  const startDT = ymdhms(selectedSlot.self.y, selectedSlot.self.m, selectedSlot.self.d, st.hour, st.minute);
+  const endDT   = ymdhms(selectedSlot.self.y, selectedSlot.self.m, selectedSlot.self.d, endHM.hour, endHM.minute);
 
-  var subject = 'Physician visit – ' + (visitPlan.self.type==='first' ? 'First-Time (60m)' : 'Follow-Up (30m)');
-  var body = [
-    'In-office physician visit for ' + first + ' ' + last + '.',
-    'When: ' + friendlyStartFromSelected('self') + ' (' + CONFIG.TIMEZONE + ')',
-    'Where: ' + loc,
+  const subject = 'Physician visit – ' + (visitPlan.self.type==='first' ? 'First-Time (60m)' : 'Follow-Up (30m)');
+  const body = [
+    'In-office physician visit for '+first+' '+last+'.',
+    'When: '+friendlyStartFromSelected('self')+' ('+CONFIG.TIMEZONE+')',
+    'Where: '+loc,
     'Check-in: Please check in at the front desk when you arrive.',
-    'Contact: ' + phone,
+    'Contact: '+phone,
     '',
     'You’ll receive reminders 48h and 24h before your appointment.'
   ].join('\n');
 
-  var payload = {
-    subject: subject,
-    body: body,
-    start: { dateTime: startDT, timeZone: CONFIG.TIMEZONE },
-    end:   { dateTime: endDT,   timeZone: CONFIG.TIMEZONE },
-    expectedDate: selectedSlot.self.y + '-' + p2(selectedSlot.self.m) + '-' + p2(selectedSlot.self.d),
-    location: { displayName: 'In-Office — ' + loc },
+  const payload = {
+    subject, body,
+    start: { dateTime:startDT, timeZone: CONFIG.TIMEZONE },
+    end:   { dateTime:endDT,   timeZone: CONFIG.TIMEZONE },
+    expectedDate: selectedSlot.self.y+'-'+p2(selectedSlot.self.m)+'-'+p2(selectedSlot.self.d),
+    location: { displayName: 'In-Office — '+loc },
     attendees: [{ address: email, name: first+' '+last, type:'required' }],
     allowNewTimeProposals: true,
     transactionId: generateUUID(),
-    visitType: visitPlan.self.type, // for your backend if useful
-    dob: dob,
-    over18: 'yes',
-    guardian: null,
-    household: null
+    visitType: visitPlan.self.type,
+    dob, over18:'yes', guardian:null, household:null
   };
 
-  var resp = await fetch(withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY), {
-    method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body: JSON.stringify(payload)
+  const resp = await fetch(withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY), {
+    method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(payload)
   });
-  if (!resp.ok){ var t=''; try{ t=await resp.text(); }catch(_){}
-    throw new Error('Failed to book ('+resp.status+') '+t); }
-  var result = await resp.json();
+  if(!resp.ok){ let t=''; try{ t=await resp.text(); }catch{} throw new Error('Failed to book ('+resp.status+') '+t); }
+  const result = await resp.json();
   showSuccess();
   showConfirmation({ whenText: friendlyStartFromSelected('self'), locationText: loc, webLink: result?.webLink||null });
+  // Clear the form but keep confirmation visible
+  clearAll(true);
 }
 
 async function submitGuardian(){
-  var gf=(document.getElementById('guardFirstName')?.value||'').trim();
-  var gl=(document.getElementById('guardLastName')?.value||'').trim();
-  var ge=(document.getElementById('guardEmail')?.value||'').trim();
-  var gp=(document.getElementById('guardPhone')?.value||'').trim();
-  var loc = getCheckedLocation('guardian').value;
+  const gf=(document.getElementById('guardFirstName')?.value||'').trim();
+  const gl=(document.getElementById('guardLastName')?.value||'').trim();
+  const ge=(document.getElementById('guardEmail')?.value||'').trim();
+  const gp=(document.getElementById('guardPhone')?.value||'').trim();
+  const loc = getCheckedLocation('guardian').value;
 
-  var people = collectIndividuals();
-
+  const people = collectIndividuals();
   applyVisitType('guardian');
-  var st = selectedSlot.guardian.start, dur = visitPlan.guardian.durationMin;
-  var endHM = addMinutesToHM(st.hour, st.minute, dur);
-  var startDT = ymdhms(selectedSlot.guardian.y, selectedSlot.guardian.m, selectedSlot.guardian.d, st.hour, st.minute);
-  var endDT   = ymdhms(selectedSlot.guardian.y, selectedSlot.guardian.m, selectedSlot.guardian.d, endHM.hour, endHM.minute);
+  const st=selectedSlot.guardian.start, dur=visitPlan.guardian.durationMin;
+  const endHM = addMinutesToHM(st.hour, st.minute, dur);
+  const startDT = ymdhms(selectedSlot.guardian.y, selectedSlot.guardian.m, selectedSlot.guardian.d, st.hour, st.minute);
+  const endDT   = ymdhms(selectedSlot.guardian.y, selectedSlot.guardian.m, selectedSlot.guardian.d, endHM.hour, endHM.minute);
 
-  var subject = 'Physician visit – ' + (visitPlan.guardian.type==='first' ? 'First-Time (60m)' : 'Follow-Up (30m)') + ' (Household)';
-  var body = [
-    'Household physician visit booked by ' + gf + ' ' + gl + '.',
-    'When: ' + friendlyStartFromSelected('guardian') + ' (' + CONFIG.TIMEZONE + ')',
-    'Where: ' + loc,
+  const subject = 'Physician visit – ' + (visitPlan.guardian.type==='first' ? 'First-Time (60m)' : 'Follow-Up (30m)') + ' (Household)';
+  const body = [
+    'Household physician visit booked by '+gf+' '+gl+'.',
+    'When: '+friendlyStartFromSelected('guardian')+' ('+CONFIG.TIMEZONE+')',
+    'Where: '+loc,
     'Check-in: Please check in at the front desk when you arrive.',
-    'Contact: ' + gp,
-    'Individuals: ' + people.map(function(p){ return p.first+' '+p.last+' [DOB: '+p.dob+(p.under18===null?'':', '+(p.under18?'Under 18':'18+'))+']'; }).join('; '),
+    'Contact: '+gp,
+    'Individuals: '+people.map(function(p){ return p.first+' '+p.last+' [DOB: '+p.dob+(p.under18===null?'':', '+(p.under18?'Under 18':'18+'))+']'; }).join('; '),
     '',
     'You’ll receive reminders 48h and 24h before the appointment.'
   ].join('\n');
 
-  var household = {
+  const household = {
     hasSiblings: true,
     householdBlockMinutes: dur,
     under18Guardian: { sameAsMain: true, details: { name: gf+' '+gl, phone: gp, email: ge } },
-    siblings: people.map(function(p){
-      return {
-        name: p.first+' '+p.last,
-        dob: p.dob,
-        under18: p.under18,
-        needsAssessment: true,
-        guardianSame: true,
-        guardian: { name: gf+' '+gl, phone: gp, email: ge }
-      };
-    })
+    siblings: people.map(function(p){ return { name:p.first+' '+p.last, dob:p.dob, under18:p.under18, needsAssessment:true, guardianSame:true, guardian:{ name:gf+' '+gl, phone:gp, email:ge } }; })
   };
 
-  var payload = {
-    subject: subject,
-    body: body,
-    start: { dateTime: startDT, timeZone: CONFIG.TIMEZONE },
-    end:   { dateTime: endDT,   timeZone: CONFIG.TIMEZONE },
-    expectedDate: selectedSlot.guardian.y + '-' + p2(selectedSlot.guardian.m) + '-' + p2(selectedSlot.guardian.d),
-    location: { displayName: 'In-Office — ' + loc },
+  const payload = {
+    subject, body,
+    start: { dateTime:startDT, timeZone: CONFIG.TIMEZONE },
+    end:   { dateTime:endDT,   timeZone: CONFIG.TIMEZONE },
+    expectedDate: selectedSlot.guardian.y+'-'+p2(selectedSlot.guardian.m)+'-'+p2(selectedSlot.guardian.d),
+    location: { displayName: 'In-Office — '+loc },
     attendees: [{ address: ge, name: gf+' '+gl, type:'required' }],
     allowNewTimeProposals: true,
     transactionId: generateUUID(),
     visitType: visitPlan.guardian.type,
-    over18: 'yes',
+    over18:'yes',
     guardian: { name: gf+' '+gl, phone: gp, email: ge },
-    household: household
+    household
   };
 
-  var resp = await fetch(withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY), {
-    method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body: JSON.stringify(payload)
+  const resp = await fetch(withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY), {
+    method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(payload)
   });
-  if (!resp.ok){ var t=''; try{ t=await resp.text(); }catch(_){}
-    throw new Error('Failed to book ('+resp.status+') '+t); }
-  var result = await resp.json();
+  if(!resp.ok){ let t=''; try{ t=await resp.text(); }catch{} throw new Error('Failed to book ('+resp.status+') '+t); }
+  const result = await resp.json();
   showSuccess();
   showConfirmation({ whenText: friendlyStartFromSelected('guardian'), locationText: loc, webLink: result?.webLink||null });
+  // Clear the form but keep confirmation visible
+  clearAll(true);
 }
 
-/* -------------------------
-   Submit handler (choose flow)
--------------------------- */
+/* ------------------------- Submit handler -------------------------- */
 async function handleSubmit(e){
   e.preventDefault();
   hideMessages();
-
-  var selfC = document.getElementById('selfConfirm18')?.checked || false;
-  var guardC = document.getElementById('guardianConfirm18')?.checked || false;
-
+  const selfC = document.getElementById('selfConfirm18')?.checked || false;
+  const guardC = document.getElementById('guardianConfirm18')?.checked || false;
   if (!selfC && !guardC){ showError('Please choose a flow: Individual (18+) or Parent/Guardian (18+).'); return; }
   if (selfC && guardC){ showError('Please use one flow at a time. Uncheck one of the confirmations.'); return; }
 
-  var btn=document.getElementById('submitBtn');
-  var spin=document.getElementById('submitSpinner');
-  if (btn) btn.disabled = true;
-  if (spin) spin.classList?.remove('hidden');
+  const btn=document.getElementById('submitBtn');
+  const spin=document.getElementById('submitSpinner');
+  if(btn) btn.disabled=true; if(spin) spin.classList?.remove('hidden');
   overlay(true, 'Submitting your booking…');
 
   try{
-    if (selfC){
-      if (!validateSelfFlow()) return;
-      await submitSelf();
-    } else {
-      if (!validateGuardianFlow()) return;
-      await submitGuardian();
-    }
-  }catch(err){
-    console.error(err);
-    showError('There was an error booking your appointment. Please try again or call the office.');
-  }finally{
-    if (btn) btn.disabled=false;
-    if (spin) spin.classList?.add('hidden');
-    overlay(false);
-  }
+    if (selfC){ if (!validateSelfFlow()) return; await submitSelf(); }
+    else { if (!validateGuardianFlow()) return; await submitGuardian(); }
+  }catch(err){ console.error(err); showError('There was an error booking your appointment. Please try again or call the office.'); }
+  finally{ if(btn) btn.disabled=false; if(spin) spin.classList?.add('hidden'); overlay(false); }
 }
 
-/* -------------------------
-   Misc: masks, helpers, resets
--------------------------- */
+/* ------------------------- Misc -------------------------- */
 function formatPhoneInput(el){
   if (!el) return;
   el.addEventListener('input', function(e){
-    var v = e.target.value.replace(/\D/g,'').slice(0,10);
-    if (v.length>6) e.target.value = v.slice(0,3)+'-'+v.slice(3,6)+'-'+v.slice(6);
-    else if (v.length>3) e.target.value = v.slice(0,3)+'-'+v.slice(3);
-    else e.target.value = v;
+    var v=e.target.value.replace(/\D/g,'').slice(0,10);
+    if(v.length>6) e.target.value=v.slice(0,3)+'-'+v.slice(3,6)+'-'+v.slice(6);
+    else if(v.length>3) e.target.value=v.slice(0,3)+'-'+v.slice(3);
+    else e.target.value=v;
   });
 }
-function clearAll(){
+
+/* Clear form; keepConfirmation=true keeps the confirmation card visible */
+function clearAll(keepConfirmation){
   document.getElementById('physForm')?.reset();
-  selectedSlot.self = null;
-  selectedSlot.guardian = null;
-  visitPlan.self = { type:null, durationMin:30, stepMin:15 };
-  visitPlan.guardian = { type:null, durationMin:30, stepMin:15 };
-  var tsS = document.getElementById('timeSlotsSelf'); if (tsS) tsS.innerHTML='';
-  var tsG = document.getElementById('timeSlotsGuardian'); if (tsG) tsG.innerHTML='';
+  selectedSlot.self=null; selectedSlot.guardian=null;
+  visitPlan.self={type:null,durationMin:30,stepMin:15};
+  visitPlan.guardian={type:null,durationMin:30,stepMin:15};
+  const tsS=document.getElementById('timeSlotsSelf'); if(tsS) tsS.innerHTML='';
+  const tsG=document.getElementById('timeSlotsGuardian'); if(tsG) tsG.innerHTML='';
   hideMessages();
-  var card = document.getElementById('confirmationCard'); if (card) card.classList.remove('visible');
-  // Reset individuals to one blank card
-  var list = document.getElementById('individualsList');
-  if (list){
-    list.innerHTML = '';
-    // seed one
-    var seed = document.createElement('div');
-    seed.className = 'person-card';
-    seed.innerHTML = `
-      <div class="person-header">
-        <span class="person-title">Individual</span>
-      </div>
+  const card=document.getElementById('confirmationCard');
+  if(card && !keepConfirmation) card.classList.remove('visible');
+
+  // reset individuals to one blank card
+  const list=document.getElementById('individualsList');
+  if(list){
+    list.innerHTML='';
+    const seed=document.createElement('div');
+    seed.className='person-card';
+    seed.innerHTML=`
+      <div class="person-header"><span class="person-title">Individual</span></div>
       <div class="form-row">
-        <div class="form-group">
-          <label>First Name <span class="required">*</span></label>
-          <input type="text" />
-        </div>
-        <div class="form-group">
-          <label>Last Name <span class="required">*</span></label>
-          <input type="text" />
-        </div>
+        <div class="form-group"><label>First Name <span class="required">*</span></label><input type="text" /></div>
+        <div class="form-group"><label>Last Name <span class="required">*</span></label><input type="text" /></div>
       </div>
-      <div class="form-group">
-        <label>BirthDate <span class="required">*</span></label>
-        <input type="date" />
-      </div>
+      <div class="form-group"><label>BirthDate <span class="required">*</span></label><input type="date" /></div>
     `;
     list.appendChild(seed);
   }
 }
-function makeCheckboxesMutuallyExclusive(aId, bId){
-  var a = document.getElementById(aId);
-  var b = document.getElementById(bId);
-  if (a) a.addEventListener('change', function(){ if (a.checked && b) b.checked = false; });
-  if (b) b.addEventListener('change', function(){ if (b.checked && a) a.checked = false; });
+function makeCheckboxesMutuallyExclusive(aId,bId){
+  const a=document.getElementById(aId), b=document.getElementById(bId);
+  if(a) a.addEventListener('change', function(){ if(a.checked&&b) b.checked=false; });
+  if(b) b.addEventListener('change', function(){ if(b.checked&&a) a.checked=false; });
 }
 
-/* -------------------------
-   Wire-up
--------------------------- */
-document.addEventListener('DOMContentLoaded', function () {
-  // Phone masks
+/* ------------------------- Wire-up -------------------------- */
+document.addEventListener('DOMContentLoaded', function(){
   formatPhoneInput(document.getElementById('selfPhone'));
   formatPhoneInput(document.getElementById('guardPhone'));
 
   // Flow toggles mutually exclusive
-  var selfC = document.getElementById('selfConfirm18');
-  var guardC = document.getElementById('guardianConfirm18');
-  if (selfC && guardC){
-    selfC.addEventListener('change', function(){ if (selfC.checked) guardC.checked = false; });
-    guardC.addEventListener('change', function(){ if (guardC.checked) selfC.checked = false; });
+  const selfC=document.getElementById('selfConfirm18');
+  const guardC=document.getElementById('guardianConfirm18');
+  if(selfC&&guardC){
+    selfC.addEventListener('change', function(){ if(selfC.checked) guardC.checked=false; });
+    guardC.addEventListener('change', function(){ if(guardC.checked) selfC.checked=false; });
   }
 
-  // Locations behave like radios per flow
+  // Locations act like radios per flow
   makeCheckboxesMutuallyExclusive('selfLocAugusta','selfLocMacon');
   makeCheckboxesMutuallyExclusive('guardLocAugusta','guardLocMacon');
 
-  // Visit type radios: update per-flow plan and re-render chips if already loaded
+  // Visit type radios -> re-render if slots are loaded
   document.querySelectorAll('input[name="firstTimeSelf"]').forEach(function(r){
-    r.addEventListener('change', function(){
-      applyVisitType('self');
-      if (slotsCache) displaySlotsForFlow('self', slotsCache);
-    });
+    r.addEventListener('change', function(){ applyVisitType('self'); if(slotsCache) displaySlotsForFlow('self', slotsCache); });
   });
   document.querySelectorAll('input[name="firstTimeGuardian"]').forEach(function(r){
-    r.addEventListener('change', function(){
-      applyVisitType('guardian');
-      if (slotsCache) displaySlotsForFlow('guardian', slotsCache);
-    });
+    r.addEventListener('change', function(){ applyVisitType('guardian'); if(slotsCache) displaySlotsForFlow('guardian', slotsCache); });
   });
 
-  // Load slots buttons (per flow)
+  // Load slots per flow
   document.getElementById('loadSlotsSelfBtn')?.addEventListener('click', async function(){
-    applyVisitType('self');
-    if (!visitPlan.self.type){ showError('Please select whether this is your first visit or a follow-up.'); return; }
-    var slots = await ensureSlots();
-    displaySlotsForFlow('self', slots);
+    applyVisitType('self'); if(!visitPlan.self.type){ showError('Please select whether this is your first visit or a follow-up.'); return; }
+    const slots = await ensureSlots(); displaySlotsForFlow('self', slots);
   });
   document.getElementById('loadSlotsGuardianBtn')?.addEventListener('click', async function(){
-    applyVisitType('guardian');
-    if (!visitPlan.guardian.type){ showError('Please select whether this is your first visit or a follow-up.'); return; }
-    var slots = await ensureSlots();
-    displaySlotsForFlow('guardian', slots);
+    applyVisitType('guardian'); if(!visitPlan.guardian.type){ showError('Please select whether this is your first visit or a follow-up.'); return; }
+    const slots = await ensureSlots(); displaySlotsForFlow('guardian', slots);
   });
 
   // Add +Individuals
   document.getElementById('addIndividualBtn')?.addEventListener('click', addIndividualCard);
 
-  // Submit
+  // Submit & Clear
   document.getElementById('physForm')?.addEventListener('submit', handleSubmit);
+  document.getElementById('clearFormBtn')?.addEventListener('click', function(){ clearAll(false); });
 
-  // Clear
-  document.getElementById('clearFormBtn')?.addEventListener('click', clearAll);
-
-  // Prefill convenience (optional)
-  try {
-    var nm = getQueryParam('name') || localStorage.getItem('sw_client_name');
-    var ph = getQueryParam('phone') || localStorage.getItem('sw_client_phone');
-    if (nm){
-      var parts = nm.trim().split(' ');
-      var f = parts.shift() || '';
-      var l = parts.join(' ') || '';
-      if (document.getElementById('selfFirstName')) document.getElementById('selfFirstName').value = f;
-      if (document.getElementById('selfLastName'))  document.getElementById('selfLastName').value  = l;
+  // Prefill convenience
+  try{
+    const nm=getQueryParam('name')||localStorage.getItem('sw_client_name');
+    const ph=getQueryParam('phone')||localStorage.getItem('sw_client_phone');
+    if(nm){
+      const parts=nm.trim().split(' '), f=parts.shift()||'', l=parts.join(' ')||'';
+      if(document.getElementById('selfFirstName')) document.getElementById('selfFirstName').value=f;
+      if(document.getElementById('selfLastName'))  document.getElementById('selfLastName').value=l;
     }
-    if (ph && document.getElementById('selfPhone')){
-      document.getElementById('selfPhone').value = ph;
-    }
-  } catch {}
+    if(ph && document.getElementById('selfPhone')) document.getElementById('selfPhone').value=ph;
+  }catch{}
 });
 </script>
+
 
 </body>
 
