@@ -411,6 +411,95 @@ input[type="email"]{
   .flow-grid{ grid-template-columns: 1fr; }
 }
 
+/* ===== UI polish pack (append to end of your CSS) ===== */
+
+/* Roomier canvas for two-column flows */
+.container{ max-width: 1100px; }
+
+/* Flow cards: subtle lift + border emphasis on hover */
+.flow-card{
+  transition: transform var(--t-fast), box-shadow var(--t-fast), border-color var(--t-fast);
+}
+.flow-card:hover{
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--primary) 30%, var(--border));
+  box-shadow: 0 12px 30px rgba(2,6,23,.12);
+}
+
+/* Make "selected" states auto-highlight when inputs are checked */
+.radio-option:has(input:checked),
+.choice-option:has(input:checked){
+  border-color: var(--primary);
+  background: linear-gradient(0deg, rgba(79,70,229,.06), rgba(6,182,212,.06));
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--primary) 55%, transparent);
+}
+.radio-option input:focus-visible,
+.choice-option input:focus-visible{
+  outline: none;
+}
+.radio-option:has(input:focus-visible),
+.choice-option:has(input:focus-visible){
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+/* Slot chips are buttons now — improve focus ring & tap targets */
+.slot-chip{
+  appearance: none;
+  border: 1.5px solid var(--border);
+  background: linear-gradient(180deg, #ffffff, #fafafa);
+  min-height: 40px;
+}
+.slot-chip:focus-visible{
+  outline: 0;
+  box-shadow: 0 0 0 4px var(--ring-strong), 0 8px 22px rgba(2,6,23,.10);
+}
+
+/* Confirmation card: a bit more presence */
+.confirm-card{
+  border-color: color-mix(in oklab, var(--success) 35%, #fff);
+  background: linear-gradient(0deg, color-mix(in oklab, var(--success) 8%, #fff), #fff);
+}
+.confirm-card.visible{
+  animation: slideDown .35s ease-out both;
+}
+
+/* Confirm actions: keep spacing tidy on wrap */
+.confirm-actions{
+  gap: 12px;
+}
+
+/* Person card remove button */
+.person-card .btn-remove{
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--muted);
+  padding: 6px 10px;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: border-color var(--t-fast), color var(--t-fast), transform var(--t-fast);
+}
+.person-card .btn-remove:hover{
+  color: var(--danger);
+  border-color: color-mix(in oklab, var(--danger) 50%, var(--border));
+  transform: translateY(-1px);
+}
+
+/* Flow toggle: friendlier emphasis */
+.flow-toggle{
+  background: color-mix(in oklab, var(--accent) 12%, #fff);
+  border-color: color-mix(in oklab, var(--accent) 45%, #fff);
+}
+
+/* Buttons: slightly crisper hover lift */
+.btn-primary{ box-shadow: 0 10px 28px rgba(79,70,229,.35); }
+.btn-primary:hover:not(:disabled){ transform: translateY(-2px); box-shadow: 0 18px 42px rgba(79,70,229,.48); }
+.btn-secondary:hover{ transform: translateY(-2px); box-shadow: 0 10px 26px rgba(2,6,23,.12); }
+
+/* Mobile: give a bit more breathing room between flow cards */
+@media (max-width: 768px){
+  .flow-grid{ gap: 16px; }
+}
+
 
   </style>
 </head>
@@ -965,18 +1054,43 @@ function friendlyStartFromSelected(flow){
   const mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return d+' '+mons[m-1]+' '+y+', '+t12fmt(s.hour, s.minute);
 }
+// REPLACE your existing showConfirmation with this version
 function showConfirmation(opts){
-  const card=document.getElementById('confirmationCard'); if(!card)return;
-  const confWhen=document.getElementById('confWhen');
-  const confLocation=document.getElementById('confLocation');
-  const confNote=document.getElementById('confNote');
-  const outlookLink=document.getElementById('confOutlookLink');
+  var card = document.getElementById('confirmationCard'); if (!card) return;
 
-  if(confWhen) confWhen.textContent = opts.whenText || '—';
-  if(confLocation) confLocation.textContent = opts.locationText || referralAddressText();
-  if(confNote) confNote.textContent = 'Please check in at the front desk when you arrive.';
-  // Always hide Outlook link as requested
-  if (outlookLink){ outlookLink.removeAttribute('href'); outlookLink.style.display='none'; }
+  var confWhen = document.getElementById('confWhen');
+  var confLocation = document.getElementById('confLocation');
+  var confNote = document.getElementById('confNote');
+  var outlookLink = document.getElementById('confOutlookLink');
+
+  if (confWhen) confWhen.textContent = opts.whenText || '—';
+  if (confLocation) confLocation.textContent = opts.locationText || referralAddressText();
+  if (confNote) confNote.textContent = 'Please check in at the front desk when you arrive.';
+  // Keep Outlook hidden (if you later want it, just set href and display)
+  if (outlookLink){ outlookLink.removeAttribute('href'); outlookLink.style.display = 'none'; }
+
+  // ⬇️ Add/ensure "Book another" button
+  var actions = card.querySelector('.confirm-actions');
+  if (actions){
+    var existing = document.getElementById('bookAnotherBtn');
+    if (!existing){
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = 'bookAnotherBtn';
+      btn.className = 'btn btn-primary';
+      btn.textContent = 'Book another appointment';
+      btn.addEventListener('click', function(){
+        // Reset the form and hide the confirmation so user can start over
+        clearAll(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Put focus on the first flow toggle for convenience
+        (document.getElementById('selfConfirm18') || document.getElementById('guardianConfirm18'))?.focus?.();
+      });
+      actions.prepend(btn);
+    } else {
+      existing.style.display = 'inline-flex';
+    }
+  }
 
   card.classList.add('visible');
   card.scrollIntoView({ behavior:'smooth', block:'center' });
