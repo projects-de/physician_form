@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Still Waters - Schedule Physician Appointment</title>
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+  <link rel="manifest" href="./site.webmanifest">
+
   <style>
     /* --- Reset & Tokens --- */
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -91,12 +97,25 @@
     @keyframes slideIn{ from{ opacity:0; transform: translateY(18px);} to{ opacity:1; transform: translateY(0);} }
 
     /* --- Header --- */
-    .header{
-      padding: 40px 32px;
-      color: #fff;
-      background:
-        radial-gradient(800px 200px at 20% -20%, rgba(56,189,248,.35), transparent 60%),
-        linear-gradient(135deg, var(--primary), var(--secondary));
+   .header{
+      padding:40px 32px;
+      color:#fff;
+      background:linear-gradient(135deg, var(--primary), var(--secondary));
+      text-align:center;
+    }
+
+    .header img.logo{
+      max-width:100px;
+      height:auto;
+      display:block;
+      margin:0 auto 16px auto;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
+    }
+        .header .call-line{
+      font-size:1rem;
+      margin-top:10px;
+      color:#e0eaff;
+      font-weight:600;
     }
     .header h1{
       font-size: clamp(1.8rem, 2.6vw, 2.6rem);
@@ -494,6 +513,15 @@ input[type="email"]{
 .btn-primary{ box-shadow: 0 10px 28px rgba(79,70,229,.35); }
 .btn-primary:hover:not(:disabled){ transform: translateY(-2px); box-shadow: 0 18px 42px rgba(79,70,229,.48); }
 .btn-secondary:hover{ transform: translateY(-2px); box-shadow: 0 10px 26px rgba(2,6,23,.12); }
+ .emergency-notice{
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 14px 18px; color: #fff;
+      background: linear-gradient(135deg, #f43f5e, #ef4444);
+      border-bottom: 1px solid rgba(255,255,255,.25);
+      font-weight: 600;
+      border-radius: 30px;
+    }
+    .emergency-notice svg{ width: 22px; height: 22px; }
 
 /* Mobile: give a bit more breathing room between flow cards */
 @media (max-width: 768px){
@@ -507,8 +535,18 @@ input[type="email"]{
   <div class="container">
     <!-- Header -->
     <div class="header">
-      <h1>Still Waters – Physician Scheduler</h1>
-      <p>In-office NP/MD visits • no telehealth • 15-minute start times</p>
+      <img src="logo.png" alt="Still Waters Logo" class="logo"style="border-radius:30px;" />
+      <h1>Still Waters Professional Counseling Services, Inc</h1>
+      <h2>Schedule an appointment with a Physician.</h2>
+     
+      <div class="call-line">
+        If you prefer to make your appointment by speaking to a Still Water’s employee call:<br>
+        <strong>706-955-9224</strong>
+    </div>
+     <div class="emergency-notice">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/></svg>
+      <span>If you are experiencing an emergency, please dial 911 immediately</span>
+    </div>
     </div>
 
     <!-- Form -->
