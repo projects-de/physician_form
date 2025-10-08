@@ -990,10 +990,17 @@ function displaySlotsForFlow(flow, slots){
 }
 
 /* ------------------------- Fetch slots (cached) -------------------------- */
-async function ensureSlots(){
-  if (slotsCache) return slotsCache;
+async function ensureSlots(opts){
+  const key = JSON.stringify(opts||{});
+  if (slotsCache && slotsCache.key === key) return slotsCache.data;
+
   overlay(true, 'Loading available times…');
-  const url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
+  let url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
+  const qs = new URLSearchParams();
+  if (opts?.formKind) qs.set('formKind', opts.formKind);
+  if (opts?.calendarSite) qs.set('calendarSite', opts.calendarSite);
+  if (qs.toString()) url += (url.includes('?') ? '&' : '?') + qs.toString();
+
   try{
     const resp = await fetch(url, { method:'GET', headers:{'Accept':'application/json'} });
     const text = await resp.text();
@@ -1003,8 +1010,9 @@ async function ensureSlots(){
                : (Array.isArray(data.free_slots) ? data.free_slots
                : (Array.isArray(data.freeSlots) ? data.freeSlots
                : (Array.isArray(data.slots) ? data.slots : [])));
-    slotsCache = list.map(parseSlotString);
-    return slotsCache;
+    const parsed = list.map(parseSlotString);
+    slotsCache = { key, data: parsed };
+    return parsed;
   }catch(e){ console.error(e); showError('Failed to load available appointment times. Please try again.'); return []; }
   finally{ overlay(false); }
 }
@@ -1353,13 +1361,19 @@ document.addEventListener('DOMContentLoaded', function(){
 
   // Load slots per flow
   document.getElementById('loadSlotsSelfBtn')?.addEventListener('click', async function(){
-    applyVisitType('self'); if(!visitPlan.self.type){ showError('Please select whether this is your first visit or a follow-up.'); return; }
-    const slots = await ensureSlots(); displaySlotsForFlow('self', slots);
-  });
+  applyVisitType('self'); if(!visitPlan.self.type){ showError('Please select whether this is your first visit or a follow-up.'); return; }
+  const loc = getCheckedLocation('self'); if(!loc.ok){ showError(loc.msg); return; }
+  const site = getPhysicianSiteKeyFromLocationText(loc.value);
+  const slots = await ensureSlots({ formKind: 'physician', calendarSite: site });
+  displaySlotsForFlow('self', slots);
+});
   document.getElementById('loadSlotsGuardianBtn')?.addEventListener('click', async function(){
-    applyVisitType('guardian'); if(!visitPlan.guardian.type){ showError('Please select whether this is your first visit or a follow-up.'); return; }
-    const slots = await ensureSlots(); displaySlotsForFlow('guardian', slots);
-  });
+  applyVisitType('guardian'); if(!visitPlan.guardian.type){ showError('Please select whether this is your first visit or a follow-up.'); return; }
+  const loc = getCheckedLocation('guardian'); if(!loc.ok){ showError(loc.msg); return; }
+  const site = getPhysicianSiteKeyFromLocationText(loc.value);
+  const slots = await ensureSlots({ formKind: 'physician', calendarSite: site });
+  displaySlotsForFlow('guardian', slots);
+});
 
   // Add +Individuals
   document.getElementById('addIndividualBtn')?.addEventListener('click', addIndividualCard);
