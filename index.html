@@ -1142,6 +1142,7 @@ async function submitSelf(){
   const phone=(document.getElementById('selfPhone')?.value||'').trim();
   const dob  =(document.getElementById('selfDob')?.value||'').trim();
   const loc  = getCheckedLocation('self').value;
+  const calendarSite = getPhysicianSiteKeyFromLocationText(loc);
 
   try{ localStorage.setItem('sw_client_name', first+' '+last); localStorage.setItem('sw_client_phone', phone); }catch{}
 
@@ -1172,7 +1173,9 @@ async function submitSelf(){
     allowNewTimeProposals: true,
     transactionId: generateUUID(),
     visitType: visitPlan.self.type,
-    dob, over18:'yes', guardian:null, household:null
+    dob, over18:'yes', guardian:null, household:null,
+    formKind: 'physician',
+    calendarSite // 'Augusta' | 'Macon' | null
   };
 
   const resp = await fetch(withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY), {
@@ -1186,12 +1189,21 @@ async function submitSelf(){
   clearAll(true);
 }
 
+function getPhysicianSiteKeyFromLocationText(locText){
+  const s = (locText || '').toLowerCase();
+  if (s.includes('augusta')) return 'Augusta';
+  if (s.includes('macon')) return 'Macon';
+  return null;
+}
+
+
 async function submitGuardian(){
   const gf=(document.getElementById('guardFirstName')?.value||'').trim();
   const gl=(document.getElementById('guardLastName')?.value||'').trim();
   const ge=(document.getElementById('guardEmail')?.value||'').trim();
   const gp=(document.getElementById('guardPhone')?.value||'').trim();
   const loc = getCheckedLocation('guardian').value;
+  const calendarSite = getPhysicianSiteKeyFromLocationText(loc);
 
   const people = collectIndividuals();
   applyVisitType('guardian');
@@ -1231,7 +1243,9 @@ async function submitGuardian(){
     visitType: visitPlan.guardian.type,
     over18:'yes',
     guardian: { name: gf+' '+gl, phone: gp, email: ge },
-    household
+    household,
+    formKind: 'physician',
+    calendarSite
   };
 
   const resp = await fetch(withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY), {
