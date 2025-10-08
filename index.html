@@ -111,6 +111,9 @@
       margin:0 auto 16px auto;
       filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
     }
+    /* Row of date chips above the times */
+.date-bar{ display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 12px; }
+
         .header .call-line{
       font-size:1rem;
       margin-top:10px;
@@ -849,6 +852,7 @@ var CONFIG = {
 /* ------------------------- State -------------------------- */
 var slotsCache = null;
 var selectedSlot = { self: null, guardian: null };
+var selectedDate = { self: null, guardian: null };
 var visitPlan = {
   self:     { type: null, durationMin: 30, stepMin: 15 },
   guardian: { type: null, durationMin: 30, stepMin: 15 }
@@ -910,24 +914,69 @@ function hideMessages(){ var s=document.getElementById('successMessage'), e=docu
 function overlay(on, text){ var ov=document.getElementById('loadingOverlay'); var msg=document.getElementById('overlayMessage'); if(!ov)return; if(typeof text==='string'&&msg) msg.textContent=text; ov.classList.toggle('active', !!on); }
 
 /* ------------------------- Render slots (FIXED selection) -------------------------- */
+/* ------------------------- Render slots (date-first reveal) -------------------------- */
 function displaySlotsForFlow(flow, slots){
   const containerId = (flow==='self') ? 'timeSlotsSelf' : 'timeSlotsGuardian';
   const container = document.getElementById(containerId);
   if (!container) return;
   container.innerHTML = '';
-  selectedSlot[flow] = null;
+  selectedSlot[flow] = null; // reset time selection on fresh render
 
   applyVisitType(flow);
-  if (!visitPlan[flow].type){ container.innerHTML = '<p>Please choose if this is your first visit or a follow-up.</p>'; return; }
-  if (!slots || !slots.length){ container.innerHTML = '<p>No available slots returned by the server. Please check back later.</p>'; return; }
+  if (!visitPlan[flow].type){
+    container.innerHTML = '<p>Please choose if this is your first visit or a follow-up.</p>';
+    return;
+  }
+  if (!slots || !slots.length){
+    container.innerHTML = '<p>No available slots returned by the server. Please check back later.</p>';
+    return;
+  }
 
+  // Normalize input
   const parsed = (typeof slots[0] === 'string' || !('startMin' in slots[0])) ? slots.map(parseSlotString) : slots.slice();
   const byDate = groupByDate(parsed);
   const keys = Object.keys(byDate).sort();
   if (!keys.length){ container.innerHTML = '<p>No availability found.</p>'; return; }
 
+  // ========== Date chips row ==========
+  const dateBar = document.createElement('div');
+  dateBar.className = 'date-bar';
   keys.forEach(function(key){
+    const day = byDate[key];
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'slot-chip' + (selectedDate[flow]===key ? ' selected' : '');
+    chip.textContent = localDow(day.y, day.m, day.d) + ' ' + day.dateStr; // e.g., "Thu 09 Oct 2025"
+    chip.setAttribute('aria-pressed', selectedDate[flow]===key ? 'true' : 'false');
+
+    chip.addEventListener('click', function(){
+      // mark selection
+      selectedDate[flow] = key;
+      dateBar.querySelectorAll('.slot-chip.selected').forEach(el => { el.classList.remove('selected'); el.setAttribute('aria-pressed','false'); });
+      chip.classList.add('selected');
+      chip.setAttribute('aria-pressed','true');
+      // when changing date, clear any previously chosen time for this flow
+      selectedSlot[flow] = null;
+      // render that day's times
+      renderTimesForDate(key);
+    });
+
+    chip.addEventListener('keydown', function(ev){
+      if (ev.key==='Enter' || ev.key===' ') { ev.preventDefault(); chip.click(); }
+    });
+
+    dateBar.appendChild(chip);
+  });
+
+  // ========== Slot area (populates after a date click) ==========
+  const slotArea = document.createElement('div');
+  slotArea.setAttribute('aria-live', 'polite');
+
+  function renderTimesForDate(key){
+    slotArea.innerHTML = ''; // clear previous
+
     const dayData = byDate[key];
+    if (!dayData){ slotArea.innerHTML = '<p>No times for the selected date.</p>'; return; }
 
     const card = document.createElement('div');
     card.className = 'time-slot';
@@ -956,8 +1005,8 @@ function displaySlotsForFlow(flow, slots){
 
         chip.addEventListener('click', (function(mm, day){
           return function(){
-            // unselect any previously selected chip in THIS FLOW ONLY
-            container.querySelectorAll('.slot-chip.selected').forEach(function(el){ el.classList.remove('selected'); });
+            // unselect any previously selected chip in THIS date’s grid only
+            grid.querySelectorAll('.slot-chip.selected').forEach(function(el){ el.classList.remove('selected'); });
             this.classList.add('selected');
             selectedSlot[flow] = {
               y: day.y, m: day.m, d: day.d,
@@ -979,14 +1028,31 @@ function displaySlotsForFlow(flow, slots){
     if (!grid.children.length){
       const emptyMsg = document.createElement('div');
       emptyMsg.style.color='var(--muted)';
-      emptyMsg.textContent = (visitPlan[flow].type==='first') ? 'No 60-minute starts (30-min steps) fit today.' : 'No 30-minute starts (15-min steps) fit today.';
+      emptyMsg.textContent = (visitPlan[flow].type==='first')
+        ? 'No 60-minute starts (30-min steps) fit on this date.'
+        : 'No 30-minute starts (15-min steps) fit on this date.';
       grid.appendChild(emptyMsg);
     }
 
     card.appendChild(header);
     card.appendChild(grid);
-    container.appendChild(card);
-  });
+    slotArea.appendChild(card);
+  }
+
+  // Mount date bar + slot area
+  container.appendChild(dateBar);
+  container.appendChild(slotArea);
+
+  // Initial hint (don’t auto-select a date)
+  if (!selectedDate[flow]){
+    slotArea.innerHTML = '<div class="time-slot"><div class="range">Pick a date above to see available times.</div></div>';
+  } else if (byDate[selectedDate[flow]]) {
+    // if user had a prior selection and it still exists, show it
+    renderTimesForDate(selectedDate[flow]);
+  } else {
+    selectedDate[flow] = null;
+    slotArea.innerHTML = '<div class="time-slot"><div class="range">Pick a date above to see available times.</div></div>';
+  }
 }
 
 /* ------------------------- Fetch slots (cached) -------------------------- */
@@ -1303,6 +1369,7 @@ function formatPhoneInput(el){
 function clearAll(keepConfirmation){
   document.getElementById('physForm')?.reset();
   selectedSlot.self=null; selectedSlot.guardian=null;
+  selectedDate.self=null;  selectedDate.guardian=null;
   visitPlan.self={type:null,durationMin:30,stepMin:15};
   visitPlan.guardian={type:null,durationMin:30,stepMin:15};
   const tsS=document.getElementById('timeSlotsSelf'); if(tsS) tsS.innerHTML='';
