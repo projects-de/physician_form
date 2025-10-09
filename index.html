@@ -540,6 +540,15 @@ input[type="email"]{
   font-size: .95rem;
 }
 .inline-error.visible{ display: block; }
+/* Inline error under "Load Available Times" buttons */
+.inline-error{
+  display: none;
+  color: #b91c1c;      /* red-700 */
+  font-weight: 700;
+  margin-top: 8px;
+  font-size: .95rem;
+}
+.inline-error.visible{ display: block; }
 
   </style>
 </head>
@@ -658,6 +667,7 @@ input[type="email"]{
       <div class="form-group">
         <button type="button" class="btn btn-secondary" id="loadSlotsSelfBtn">Load Available Times</button>
         <div id="selfLocError" class="inline-error" role="alert"></div>
+        <div id="selfTypeError" class="inline-error" role="alert"></div>
       </div>
       <div id="timeSlotsSelf" class="time-slots" aria-live="polite"></div>
       <p class="section-hint">Only start times are shown. End time is calculated automatically.</p>
@@ -791,6 +801,7 @@ input[type="email"]{
       <div class="form-group">
         <button type="button" class="btn btn-secondary" id="loadSlotsGuardianBtn">Load Available Times</button>
         <div id="guardLocError" class="inline-error" role="alert"></div>
+        <div id="guardTypeError" class="inline-error" role="alert"></div>
       </div>
       <div id="timeSlotsGuardian" class="time-slots" aria-live="polite"></div>
       <p class="section-hint">Choose a start time that works for your household.</p>
@@ -1448,6 +1459,14 @@ makeCheckboxesMutuallyExclusive('guardLocAugusta','guardLocMacon');
   document.getElementById(id)?.addEventListener('change', ()=> clearInlineError('guardLocError'));
 });
 
+// Clear visit type inline errors on change
+document.querySelectorAll('input[name="firstTimeSelf"]').forEach(r=>{
+  r.addEventListener('change', ()=> clearInlineError('selfTypeError'));
+});
+document.querySelectorAll('input[name="firstTimeGuardian"]').forEach(r=>{
+  r.addEventListener('change', ()=> clearInlineError('guardTypeError'));
+});
+
 
   // Visit type radios -> re-render if slots are loaded
   document.querySelectorAll('input[name="firstTimeSelf"]').forEach(function(r){
@@ -1458,34 +1477,41 @@ makeCheckboxesMutuallyExclusive('guardLocAugusta','guardLocMacon');
   });
 
   // Load slots per flow
-  document.getElementById('loadSlotsSelfBtn')?.addEventListener('click', async function(){
+ document.getElementById('loadSlotsSelfBtn')?.addEventListener('click', async function(){
   applyVisitType('self');
   if(!visitPlan.self.type){
-    showError('Please select whether this is your first visit or a follow-up.');
+    showInlineError('selfTypeError', 'Please select First-Time or Follow-Up.');
     return;
   }
+  clearInlineError('selfTypeError');
+
   const loc = getCheckedLocation('self');
   if(!loc.ok){
     showInlineError('selfLocError', 'Please select a preferred location first.');
     return;
   }
   clearInlineError('selfLocError');
+
   const site = getPhysicianSiteKeyFromLocationText(loc.value);
   const slots = await ensureSlots({ formKind: 'physician', calendarSite: site });
   displaySlotsForFlow('self', slots);
 });
+
   document.getElementById('loadSlotsGuardianBtn')?.addEventListener('click', async function(){
   applyVisitType('guardian');
   if(!visitPlan.guardian.type){
-    showError('Please select whether this is your first visit or a follow-up.');
+    showInlineError('guardTypeError', 'Please select First-Time or Follow-Up.');
     return;
   }
+  clearInlineError('guardTypeError');
+
   const loc = getCheckedLocation('guardian');
   if(!loc.ok){
     showInlineError('guardLocError', 'Please select a preferred location first.');
     return;
   }
   clearInlineError('guardLocError');
+
   const site = getPhysicianSiteKeyFromLocationText(loc.value);
   const slots = await ensureSlots({ formKind: 'physician', calendarSite: site });
   displaySlotsForFlow('guardian', slots);
