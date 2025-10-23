@@ -528,6 +528,24 @@ input[type="email"]{
   .flow-grid{ gap: 16px; }
 }
 
+/* Inline error under "Load Available Times" buttons */
+.inline-error{
+  display: none;
+  color: #b91c1c;      /* red-700 */
+  font-weight: 700;
+  margin-top: 8px;
+  font-size: .95rem;
+}
+.inline-error.visible{ display: block; }
+/* Inline error under "Load Available Times" buttons */
+.inline-error{
+  display: none;
+  color: #b91c1c;      /* red-700 */
+  font-weight: 700;
+  margin-top: 8px;
+  font-size: .95rem;
+}
+.inline-error.visible{ display: block; }
 
   </style>
 </head>
@@ -535,7 +553,6 @@ input[type="email"]{
   <div class="container">
     <!-- Header -->
     <div class="header">
-      <img src="logo.png" alt="Still Waters Logo" class="logo"style="border-radius:30px;" />
       <h1>Still Waters Professional Counseling Services, Inc</h1>
       <h2>Schedule an appointment with a Physician.</h2>
      
@@ -645,6 +662,8 @@ input[type="email"]{
       <h2>Select Appointment Time</h2>
       <div class="form-group">
         <button type="button" class="btn btn-secondary" id="loadSlotsSelfBtn">Load Available Times</button>
+        <div id="selfLocError" class="inline-error" role="alert"></div>
+        <div id="selfTypeError" class="inline-error" role="alert"></div>
       </div>
       <div id="timeSlotsSelf" class="time-slots" aria-live="polite"></div>
       <p class="section-hint">Only start times are shown. End time is calculated automatically.</p>
@@ -777,6 +796,8 @@ input[type="email"]{
       <h2>Available Slots</h2>
       <div class="form-group">
         <button type="button" class="btn btn-secondary" id="loadSlotsGuardianBtn">Load Available Times</button>
+        <div id="guardLocError" class="inline-error" role="alert"></div>
+        <div id="guardTypeError" class="inline-error" role="alert"></div>
       </div>
       <div id="timeSlotsGuardian" class="time-slots" aria-live="polite"></div>
       <p class="section-hint">Choose a start time that works for your household.</p>
@@ -849,6 +870,7 @@ var CONFIG = {
 /* ------------------------- State -------------------------- */
 var slotsCache = null;
 var selectedSlot = { self: null, guardian: null };
+var selectedDate = { self: null, guardian: null };
 var visitPlan = {
   self:     { type: null, durationMin: 30, stepMin: 15 },
   guardian: { type: null, durationMin: 30, stepMin: 15 }
@@ -908,26 +930,80 @@ function showSuccess(){ hideMessages(); var el=document.getElementById('successM
 function showError(msg){ hideMessages(); var el=document.getElementById('errorMessage'); if(el){ el.textContent=msg||'Something went wrong.'; el.style.display='block'; setTimeout(function(){ el.style.display='none'; }, 6000);} }
 function hideMessages(){ var s=document.getElementById('successMessage'), e=document.getElementById('errorMessage'); if(s)s.style.display='none'; if(e)e.style.display='none'; }
 function overlay(on, text){ var ov=document.getElementById('loadingOverlay'); var msg=document.getElementById('overlayMessage'); if(!ov)return; if(typeof text==='string'&&msg) msg.textContent=text; ov.classList.toggle('active', !!on); }
+function showInlineError(id, msg){
+  const el = document.getElementById(id);
+  if(el){ el.textContent = msg; el.classList.add('visible'); }
+}
+function clearInlineError(id){
+  const el = document.getElementById(id);
+  if(el){ el.textContent = ''; el.classList.remove('visible'); }
+}
+
 
 /* ------------------------- Render slots (FIXED selection) -------------------------- */
+/* ------------------------- Render slots (date-first reveal) -------------------------- */
 function displaySlotsForFlow(flow, slots){
   const containerId = (flow==='self') ? 'timeSlotsSelf' : 'timeSlotsGuardian';
   const container = document.getElementById(containerId);
   if (!container) return;
   container.innerHTML = '';
-  selectedSlot[flow] = null;
+  selectedSlot[flow] = null; // reset time selection on fresh render
 
   applyVisitType(flow);
-  if (!visitPlan[flow].type){ container.innerHTML = '<p>Please choose if this is your first visit or a follow-up.</p>'; return; }
-  if (!slots || !slots.length){ container.innerHTML = '<p>No available slots returned by the server. Please check back later.</p>'; return; }
+  if (!visitPlan[flow].type){
+    container.innerHTML = '<p>Please choose if this is your first visit or a follow-up.</p>';
+    return;
+  }
+  if (!slots || !slots.length){
+    container.innerHTML = '<p>No available slots returned by the server. Please check back later.</p>';
+    return;
+  }
 
+  // Normalize input
   const parsed = (typeof slots[0] === 'string' || !('startMin' in slots[0])) ? slots.map(parseSlotString) : slots.slice();
   const byDate = groupByDate(parsed);
   const keys = Object.keys(byDate).sort();
   if (!keys.length){ container.innerHTML = '<p>No availability found.</p>'; return; }
 
+  // ========== Date chips row ==========
+  const dateBar = document.createElement('div');
+  dateBar.className = 'date-bar';
   keys.forEach(function(key){
+    const day = byDate[key];
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'slot-chip' + (selectedDate[flow]===key ? ' selected' : '');
+    chip.textContent = localDow(day.y, day.m, day.d) + ' ' + day.dateStr; // e.g., "Thu 09 Oct 2025"
+    chip.setAttribute('aria-pressed', selectedDate[flow]===key ? 'true' : 'false');
+
+    chip.addEventListener('click', function(){
+      // mark selection
+      selectedDate[flow] = key;
+      dateBar.querySelectorAll('.slot-chip.selected').forEach(el => { el.classList.remove('selected'); el.setAttribute('aria-pressed','false'); });
+      chip.classList.add('selected');
+      chip.setAttribute('aria-pressed','true');
+      // when changing date, clear any previously chosen time for this flow
+      selectedSlot[flow] = null;
+      // render that day's times
+      renderTimesForDate(key);
+    });
+
+    chip.addEventListener('keydown', function(ev){
+      if (ev.key==='Enter' || ev.key===' ') { ev.preventDefault(); chip.click(); }
+    });
+
+    dateBar.appendChild(chip);
+  });
+
+  // ========== Slot area (populates after a date click) ==========
+  const slotArea = document.createElement('div');
+  slotArea.setAttribute('aria-live', 'polite');
+
+  function renderTimesForDate(key){
+    slotArea.innerHTML = ''; // clear previous
+
     const dayData = byDate[key];
+    if (!dayData){ slotArea.innerHTML = '<p>No times for the selected date.</p>'; return; }
 
     const card = document.createElement('div');
     card.className = 'time-slot';
@@ -956,8 +1032,8 @@ function displaySlotsForFlow(flow, slots){
 
         chip.addEventListener('click', (function(mm, day){
           return function(){
-            // unselect any previously selected chip in THIS FLOW ONLY
-            container.querySelectorAll('.slot-chip.selected').forEach(function(el){ el.classList.remove('selected'); });
+            // unselect any previously selected chip in THIS date’s grid only
+            grid.querySelectorAll('.slot-chip.selected').forEach(function(el){ el.classList.remove('selected'); });
             this.classList.add('selected');
             selectedSlot[flow] = {
               y: day.y, m: day.m, d: day.d,
@@ -979,21 +1055,45 @@ function displaySlotsForFlow(flow, slots){
     if (!grid.children.length){
       const emptyMsg = document.createElement('div');
       emptyMsg.style.color='var(--muted)';
-      emptyMsg.textContent = (visitPlan[flow].type==='first') ? 'No 60-minute starts (30-min steps) fit today.' : 'No 30-minute starts (15-min steps) fit today.';
+      emptyMsg.textContent = (visitPlan[flow].type==='first')
+        ? 'No 60-minute starts (30-min steps) fit on this date.'
+        : 'No 30-minute starts (15-min steps) fit on this date.';
       grid.appendChild(emptyMsg);
     }
 
     card.appendChild(header);
     card.appendChild(grid);
-    container.appendChild(card);
-  });
+    slotArea.appendChild(card);
+  }
+
+  // Mount date bar + slot area
+  container.appendChild(dateBar);
+  container.appendChild(slotArea);
+
+  // Initial hint (don’t auto-select a date)
+  if (!selectedDate[flow]){
+    slotArea.innerHTML = '<div class="time-slot"><div class="range">Pick a date above to see available times.</div></div>';
+  } else if (byDate[selectedDate[flow]]) {
+    // if user had a prior selection and it still exists, show it
+    renderTimesForDate(selectedDate[flow]);
+  } else {
+    selectedDate[flow] = null;
+    slotArea.innerHTML = '<div class="time-slot"><div class="range">Pick a date above to see available times.</div></div>';
+  }
 }
 
 /* ------------------------- Fetch slots (cached) -------------------------- */
-async function ensureSlots(){
-  if (slotsCache) return slotsCache;
+async function ensureSlots(opts){
+  const key = JSON.stringify(opts||{});
+  if (slotsCache && slotsCache.key === key) return slotsCache.data;
+
   overlay(true, 'Loading available times…');
-  const url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
+  let url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
+  const qs = new URLSearchParams();
+  if (opts?.formKind) qs.set('formKind', opts.formKind);
+  if (opts?.calendarSite) qs.set('calendarSite', opts.calendarSite);
+  if (qs.toString()) url += (url.includes('?') ? '&' : '?') + qs.toString();
+
   try{
     const resp = await fetch(url, { method:'GET', headers:{'Accept':'application/json'} });
     const text = await resp.text();
@@ -1003,8 +1103,9 @@ async function ensureSlots(){
                : (Array.isArray(data.free_slots) ? data.free_slots
                : (Array.isArray(data.freeSlots) ? data.freeSlots
                : (Array.isArray(data.slots) ? data.slots : [])));
-    slotsCache = list.map(parseSlotString);
-    return slotsCache;
+    const parsed = list.map(parseSlotString);
+    slotsCache = { key, data: parsed };
+    return parsed;
   }catch(e){ console.error(e); showError('Failed to load available appointment times. Please try again.'); return []; }
   finally{ overlay(false); }
 }
@@ -1142,6 +1243,7 @@ async function submitSelf(){
   const phone=(document.getElementById('selfPhone')?.value||'').trim();
   const dob  =(document.getElementById('selfDob')?.value||'').trim();
   const loc  = getCheckedLocation('self').value;
+  const calendarSite = getPhysicianSiteKeyFromLocationText(loc);
 
   try{ localStorage.setItem('sw_client_name', first+' '+last); localStorage.setItem('sw_client_phone', phone); }catch{}
 
@@ -1172,7 +1274,9 @@ async function submitSelf(){
     allowNewTimeProposals: true,
     transactionId: generateUUID(),
     visitType: visitPlan.self.type,
-    dob, over18:'yes', guardian:null, household:null
+    dob, over18:'yes', guardian:null, household:null,
+    formKind: 'physician',
+    calendarSite // 'Augusta' | 'Macon' | null
   };
 
   const resp = await fetch(withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY), {
@@ -1186,12 +1290,21 @@ async function submitSelf(){
   clearAll(true);
 }
 
+function getPhysicianSiteKeyFromLocationText(locText){
+  const s = (locText || '').toLowerCase();
+  if (s.includes('augusta')) return 'Augusta';
+  if (s.includes('macon')) return 'Macon';
+  return null;
+}
+
+
 async function submitGuardian(){
   const gf=(document.getElementById('guardFirstName')?.value||'').trim();
   const gl=(document.getElementById('guardLastName')?.value||'').trim();
   const ge=(document.getElementById('guardEmail')?.value||'').trim();
   const gp=(document.getElementById('guardPhone')?.value||'').trim();
   const loc = getCheckedLocation('guardian').value;
+  const calendarSite = getPhysicianSiteKeyFromLocationText(loc);
 
   const people = collectIndividuals();
   applyVisitType('guardian');
@@ -1231,7 +1344,9 @@ async function submitGuardian(){
     visitType: visitPlan.guardian.type,
     over18:'yes',
     guardian: { name: gf+' '+gl, phone: gp, email: ge },
-    household
+    household,
+    formKind: 'physician',
+    calendarSite
   };
 
   const resp = await fetch(withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY), {
@@ -1281,6 +1396,7 @@ function formatPhoneInput(el){
 function clearAll(keepConfirmation){
   document.getElementById('physForm')?.reset();
   selectedSlot.self=null; selectedSlot.guardian=null;
+  selectedDate.self=null;  selectedDate.guardian=null;
   visitPlan.self={type:null,durationMin:30,stepMin:15};
   visitPlan.guardian={type:null,durationMin:30,stepMin:15};
   const tsS=document.getElementById('timeSlotsSelf'); if(tsS) tsS.innerHTML='';
@@ -1328,6 +1444,25 @@ document.addEventListener('DOMContentLoaded', function(){
   // Locations act like radios per flow
   makeCheckboxesMutuallyExclusive('selfLocAugusta','selfLocMacon');
   makeCheckboxesMutuallyExclusive('guardLocAugusta','guardLocMacon');
+  // Locations act like radios per flow
+makeCheckboxesMutuallyExclusive('selfLocAugusta','selfLocMacon');
+['selfLocAugusta','selfLocMacon'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('change', ()=> clearInlineError('selfLocError'));
+});
+
+makeCheckboxesMutuallyExclusive('guardLocAugusta','guardLocMacon');
+['guardLocAugusta','guardLocMacon'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('change', ()=> clearInlineError('guardLocError'));
+});
+
+// Clear visit type inline errors on change
+document.querySelectorAll('input[name="firstTimeSelf"]').forEach(r=>{
+  r.addEventListener('change', ()=> clearInlineError('selfTypeError'));
+});
+document.querySelectorAll('input[name="firstTimeGuardian"]').forEach(r=>{
+  r.addEventListener('change', ()=> clearInlineError('guardTypeError'));
+});
+
 
   // Visit type radios -> re-render if slots are loaded
   document.querySelectorAll('input[name="firstTimeSelf"]').forEach(function(r){
@@ -1338,14 +1473,45 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   // Load slots per flow
-  document.getElementById('loadSlotsSelfBtn')?.addEventListener('click', async function(){
-    applyVisitType('self'); if(!visitPlan.self.type){ showError('Please select whether this is your first visit or a follow-up.'); return; }
-    const slots = await ensureSlots(); displaySlotsForFlow('self', slots);
-  });
+ document.getElementById('loadSlotsSelfBtn')?.addEventListener('click', async function(){
+  applyVisitType('self');
+  if(!visitPlan.self.type){
+    showInlineError('selfTypeError', 'Please select First-Time or Follow-Up.');
+    return;
+  }
+  clearInlineError('selfTypeError');
+
+  const loc = getCheckedLocation('self');
+  if(!loc.ok){
+    showInlineError('selfLocError', 'Please select a preferred location first.');
+    return;
+  }
+  clearInlineError('selfLocError');
+
+  const site = getPhysicianSiteKeyFromLocationText(loc.value);
+  const slots = await ensureSlots({ formKind: 'physician', calendarSite: site });
+  displaySlotsForFlow('self', slots);
+});
+
   document.getElementById('loadSlotsGuardianBtn')?.addEventListener('click', async function(){
-    applyVisitType('guardian'); if(!visitPlan.guardian.type){ showError('Please select whether this is your first visit or a follow-up.'); return; }
-    const slots = await ensureSlots(); displaySlotsForFlow('guardian', slots);
-  });
+  applyVisitType('guardian');
+  if(!visitPlan.guardian.type){
+    showInlineError('guardTypeError', 'Please select First-Time or Follow-Up.');
+    return;
+  }
+  clearInlineError('guardTypeError');
+
+  const loc = getCheckedLocation('guardian');
+  if(!loc.ok){
+    showInlineError('guardLocError', 'Please select a preferred location first.');
+    return;
+  }
+  clearInlineError('guardLocError');
+
+  const site = getPhysicianSiteKeyFromLocationText(loc.value);
+  const slots = await ensureSlots({ formKind: 'physician', calendarSite: site });
+  displaySlotsForFlow('guardian', slots);
+});
 
   // Add +Individuals
   document.getElementById('addIndividualBtn')?.addEventListener('click', addIndividualCard);
