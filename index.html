@@ -379,6 +379,7 @@ input[type="email"]{
   border-radius: 16px;
   padding: 18px;
   box-shadow: var(--shadow);
+  align-items: center;
 }
 .flow-title{
   font-weight: 900;
@@ -528,31 +529,26 @@ input[type="email"]{
   .flow-grid{ gap: 16px; }
 }
 
-/* Inline error under "Load Available Times" buttons */
-.inline-error{
+/* ===== NEW: Flow Control CSS ===== */
+/* Hide flow contents by default */
+.flow-card > .form-section,
+.flow-card > .btn-secondary { /* Targets #addIndividualBtn */
   display: none;
-  color: #b91c1c;      /* red-700 */
-  font-weight: 700;
-  margin-top: 8px;
-  font-size: .95rem;
 }
-.inline-error.visible{ display: block; }
-/* Inline error under "Load Available Times" buttons */
-.inline-error{
-  display: none;
-  color: #b91c1c;      /* red-700 */
-  font-weight: 700;
-  margin-top: 8px;
-  font-size: .95rem;
+
+/* When active, show them */
+.flow-card.flow-active > .form-section,
+.flow-card.flow-active > .btn-secondary {
+  display: block;
 }
-.inline-error.visible{ display: block; }
+
 
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Header -->
     <div class="header">
+      <img src="logo.png" alt="Still Waters Logo" class="logo"style="border-radius:30px;" />
       <h1>Still Waters Professional Counseling Services, Inc</h1>
       <h2>Schedule an appointment with a Physician.</h2>
      
@@ -566,13 +562,10 @@ input[type="email"]{
     </div>
     </div>
 
-    <!-- Form -->
     <form id="physForm" class="form-container" novalidate>
-      <!-- Toasts (unchanged) -->
-<div id="successMessage" class="success-message">Appointment booked! You’ll receive a confirmation shortly.</div>
+      <div id="successMessage" class="success-message">Appointment booked! You’ll receive a confirmation shortly.</div>
 <div id="errorMessage" class="error-message">Something went wrong. Please try again.</div>
 
-<!-- Confirmation card (unchanged) -->
 <div id="confirmationCard" class="confirm-card" aria-live="polite">
   <h3>You're booked! 🎉</h3>
   <div class="confirm-row"><b>Date & time</b><span id="confWhen">—</span></div>
@@ -583,20 +576,16 @@ input[type="email"]{
   </div>
 </div>
 
-<!-- ===== Two Flows ===== -->
 <div class="flow-grid">
 
-  <!-- LEFT: Individual (18+) -->
   <div class="flow-card" id="flowSelf">
     <div class="flow-title">Individual (18+)</div>
 
-    <!-- Flow toggle -->
     <div class="flow-toggle">
       <input type="checkbox" id="selfConfirm18"/>
       <label for="selfConfirm18">I am an individual making an appointment with the physician and confirm that I am over the age of 18 <span class="required">*</span></label>
     </div>
 
-    <!-- Your information -->
     <div class="form-section">
       <h2>Your Information</h2>
       <div class="form-row">
@@ -611,7 +600,7 @@ input[type="email"]{
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="selfEmail">Email Address <span class="required">*</span></label>
+          <label for="selfEmail">Email Address</label>
           <input type="email" id="selfEmail" autocomplete="email"/>
         </div>
         <div class="form-group">
@@ -625,7 +614,6 @@ input[type="email"]{
       </div>
     </div>
 
-    <!-- Preferred Location -->
     <div class="form-section">
       <h2>Preferred Location</h2>
       <div class="choice-group">
@@ -641,7 +629,6 @@ input[type="email"]{
       <p class="section-hint">Select your preferred clinic location.</p>
     </div>
 
-    <!-- Visit type -->
     <div class="form-section">
       <h2>Visit Type</h2>
       <div class="radio-group">
@@ -657,19 +644,15 @@ input[type="email"]{
       <p class="section-hint">Starts offered every 15 minutes; first-time visits book 60m, follow-ups 30m.</p>
     </div>
 
-    <!-- Available Slots -->
     <div class="form-section">
       <h2>Select Appointment Time</h2>
       <div class="form-group">
         <button type="button" class="btn btn-secondary" id="loadSlotsSelfBtn">Load Available Times</button>
-        <div id="selfLocError" class="inline-error" role="alert"></div>
-        <div id="selfTypeError" class="inline-error" role="alert"></div>
       </div>
       <div id="timeSlotsSelf" class="time-slots" aria-live="polite"></div>
       <p class="section-hint">Only start times are shown. End time is calculated automatically.</p>
     </div>
 
-    <!-- Additional Info -->
     <div class="form-section">
       <h2>Additional Information</h2>
       <div class="form-group">
@@ -682,7 +665,6 @@ input[type="email"]{
       </div>
     </div>
 
-    <!-- Consent -->
     <div class="form-section">
       <h2>Consent &amp; Acknowledgements</h2>
       <label class="choice-option">
@@ -696,17 +678,14 @@ input[type="email"]{
     </div>
   </div>
 
-  <!-- RIGHT: Parent / Guardian (18+) -->
   <div class="flow-card" id="flowGuardian">
     <div class="flow-title">Parent or Guardian (18+)</div>
 
-    <!-- Flow toggle -->
     <div class="flow-toggle">
       <input type="checkbox" id="guardianConfirm18"/>
       <label for="guardianConfirm18">I am parent or guardian of an individual(s) making an appointment with the physician and confirm I am over the age of 18 <span class="required">*</span></label>
     </div>
 
-    <!-- Guardian info -->
     <div class="form-section">
       <h2>Parent/Guardian Information</h2>
       <div class="form-row">
@@ -721,7 +700,7 @@ input[type="email"]{
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="guardEmail">Email Address (Parent or Guardian) <span class="required">*</span></label>
+          <label for="guardEmail">Email Address (Parent or Guardian)</label>
           <input type="email" id="guardEmail"/>
         </div>
         <div class="form-group">
@@ -731,7 +710,6 @@ input[type="email"]{
       </div>
     </div>
 
-    <!-- Individuals Seeking Services -->
     <div class="form-section">
       <h2><b>Individuals Seeking Services</b></h2>
 
@@ -761,7 +739,6 @@ input[type="email"]{
       <p class="section-hint">Add each person who will be seen by the physician.</p>
     </div>
 
-    <!-- Preferred Location -->
     <div class="form-section">
       <h2>Preferred Location</h2>
       <div class="choice-group">
@@ -776,7 +753,6 @@ input[type="email"]{
       </div>
     </div>
 
-    <!-- Visit type -->
     <div class="form-section">
       <h2>Visit Type</h2>
       <div class="radio-group">
@@ -791,19 +767,15 @@ input[type="email"]{
       </div>
     </div>
 
-    <!-- Available Slots -->
     <div class="form-section">
       <h2>Available Slots</h2>
       <div class="form-group">
         <button type="button" class="btn btn-secondary" id="loadSlotsGuardianBtn">Load Available Times</button>
-        <div id="guardLocError" class="inline-error" role="alert"></div>
-        <div id="guardTypeError" class="inline-error" role="alert"></div>
       </div>
       <div id="timeSlotsGuardian" class="time-slots" aria-live="polite"></div>
       <p class="section-hint">Choose a start time that works for your household.</p>
     </div>
 
-    <!-- Additional Info -->
     <div class="form-section">
       <h2>Additional Information</h2>
       <div class="form-group">
@@ -816,7 +788,6 @@ input[type="email"]{
       </div>
     </div>
 
-    <!-- Consent -->
     <div class="form-section">
       <h2>Consent &amp; Acknowledgements</h2>
       <label class="choice-option">
@@ -831,7 +802,6 @@ input[type="email"]{
   </div>
 </div>
 
-<!-- Actions (keep your existing IDs/buttons so your current JS still binds later) -->
 <div class="button-group">
   <button type="button" class="btn btn-secondary" id="clearFormBtn">Clear Form</button>
   <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -843,7 +813,6 @@ input[type="email"]{
     </form>
   </div>
 
-  <!-- Loading overlay -->
   <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
     <div class="loading-content">
       <div class="spinner" aria-hidden="true"></div>
@@ -870,11 +839,12 @@ var CONFIG = {
 /* ------------------------- State -------------------------- */
 var slotsCache = null;
 var selectedSlot = { self: null, guardian: null };
-var selectedDate = { self: null, guardian: null };
 var visitPlan = {
   self:     { type: null, durationMin: 30, stepMin: 15 },
   guardian: { type: null, durationMin: 30, stepMin: 15 }
 };
+// NEW: Define variable in broader scope so it can be used in showConfirmation
+var updateFlowVisibility;
 
 /* ------------------------- Utilities -------------------------- */
 function withKey(url, key) {
@@ -926,84 +896,36 @@ function applyVisitType(flow){
 }
 
 /* ------------------------- UI helpers -------------------------- */
+// NEW: Helper to show error and scroll to it
+function showErrorAndScroll(msg){
+  showError(msg);
+  var el=document.getElementById('errorMessage');
+  if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+}
 function showSuccess(){ hideMessages(); var el=document.getElementById('successMessage'); if(el){ el.style.display='block'; setTimeout(function(){ el.style.display='none'; }, 5000);} }
 function showError(msg){ hideMessages(); var el=document.getElementById('errorMessage'); if(el){ el.textContent=msg||'Something went wrong.'; el.style.display='block'; setTimeout(function(){ el.style.display='none'; }, 6000);} }
 function hideMessages(){ var s=document.getElementById('successMessage'), e=document.getElementById('errorMessage'); if(s)s.style.display='none'; if(e)e.style.display='none'; }
 function overlay(on, text){ var ov=document.getElementById('loadingOverlay'); var msg=document.getElementById('overlayMessage'); if(!ov)return; if(typeof text==='string'&&msg) msg.textContent=text; ov.classList.toggle('active', !!on); }
-function showInlineError(id, msg){
-  const el = document.getElementById(id);
-  if(el){ el.textContent = msg; el.classList.add('visible'); }
-}
-function clearInlineError(id){
-  const el = document.getElementById(id);
-  if(el){ el.textContent = ''; el.classList.remove('visible'); }
-}
-
 
 /* ------------------------- Render slots (FIXED selection) -------------------------- */
-/* ------------------------- Render slots (date-first reveal) -------------------------- */
 function displaySlotsForFlow(flow, slots){
   const containerId = (flow==='self') ? 'timeSlotsSelf' : 'timeSlotsGuardian';
   const container = document.getElementById(containerId);
   if (!container) return;
   container.innerHTML = '';
-  selectedSlot[flow] = null; // reset time selection on fresh render
+  selectedSlot[flow] = null;
 
   applyVisitType(flow);
-  if (!visitPlan[flow].type){
-    container.innerHTML = '<p>Please choose if this is your first visit or a follow-up.</p>';
-    return;
-  }
-  if (!slots || !slots.length){
-    container.innerHTML = '<p>No available slots returned by the server. Please check back later.</p>';
-    return;
-  }
+  if (!visitPlan[flow].type){ container.innerHTML = '<p>Please choose if this is your first visit or a follow-up.</p>'; return; }
+  if (!slots || !slots.length){ container.innerHTML = '<p>No available slots returned by the server. Please check back later.</p>'; return; }
 
-  // Normalize input
   const parsed = (typeof slots[0] === 'string' || !('startMin' in slots[0])) ? slots.map(parseSlotString) : slots.slice();
   const byDate = groupByDate(parsed);
   const keys = Object.keys(byDate).sort();
   if (!keys.length){ container.innerHTML = '<p>No availability found.</p>'; return; }
 
-  // ========== Date chips row ==========
-  const dateBar = document.createElement('div');
-  dateBar.className = 'date-bar';
   keys.forEach(function(key){
-    const day = byDate[key];
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'slot-chip' + (selectedDate[flow]===key ? ' selected' : '');
-    chip.textContent = localDow(day.y, day.m, day.d) + ' ' + day.dateStr; // e.g., "Thu 09 Oct 2025"
-    chip.setAttribute('aria-pressed', selectedDate[flow]===key ? 'true' : 'false');
-
-    chip.addEventListener('click', function(){
-      // mark selection
-      selectedDate[flow] = key;
-      dateBar.querySelectorAll('.slot-chip.selected').forEach(el => { el.classList.remove('selected'); el.setAttribute('aria-pressed','false'); });
-      chip.classList.add('selected');
-      chip.setAttribute('aria-pressed','true');
-      // when changing date, clear any previously chosen time for this flow
-      selectedSlot[flow] = null;
-      // render that day's times
-      renderTimesForDate(key);
-    });
-
-    chip.addEventListener('keydown', function(ev){
-      if (ev.key==='Enter' || ev.key===' ') { ev.preventDefault(); chip.click(); }
-    });
-
-    dateBar.appendChild(chip);
-  });
-
-  // ========== Slot area (populates after a date click) ==========
-  const slotArea = document.createElement('div');
-  slotArea.setAttribute('aria-live', 'polite');
-
-  function renderTimesForDate(key){
-    slotArea.innerHTML = ''; // clear previous
-
     const dayData = byDate[key];
-    if (!dayData){ slotArea.innerHTML = '<p>No times for the selected date.</p>'; return; }
 
     const card = document.createElement('div');
     card.className = 'time-slot';
@@ -1032,8 +954,8 @@ function displaySlotsForFlow(flow, slots){
 
         chip.addEventListener('click', (function(mm, day){
           return function(){
-            // unselect any previously selected chip in THIS date’s grid only
-            grid.querySelectorAll('.slot-chip.selected').forEach(function(el){ el.classList.remove('selected'); });
+            // unselect any previously selected chip in THIS FLOW ONLY
+            container.querySelectorAll('.slot-chip.selected').forEach(function(el){ el.classList.remove('selected'); });
             this.classList.add('selected');
             selectedSlot[flow] = {
               y: day.y, m: day.m, d: day.d,
@@ -1055,45 +977,21 @@ function displaySlotsForFlow(flow, slots){
     if (!grid.children.length){
       const emptyMsg = document.createElement('div');
       emptyMsg.style.color='var(--muted)';
-      emptyMsg.textContent = (visitPlan[flow].type==='first')
-        ? 'No 60-minute starts (30-min steps) fit on this date.'
-        : 'No 30-minute starts (15-min steps) fit on this date.';
+      emptyMsg.textContent = (visitPlan[flow].type==='first') ? 'No 60-minute starts (30-min steps) fit today.' : 'No 30-minute starts (15-min steps) fit today.';
       grid.appendChild(emptyMsg);
     }
 
     card.appendChild(header);
     card.appendChild(grid);
-    slotArea.appendChild(card);
-  }
-
-  // Mount date bar + slot area
-  container.appendChild(dateBar);
-  container.appendChild(slotArea);
-
-  // Initial hint (don’t auto-select a date)
-  if (!selectedDate[flow]){
-    slotArea.innerHTML = '<div class="time-slot"><div class="range">Pick a date above to see available times.</div></div>';
-  } else if (byDate[selectedDate[flow]]) {
-    // if user had a prior selection and it still exists, show it
-    renderTimesForDate(selectedDate[flow]);
-  } else {
-    selectedDate[flow] = null;
-    slotArea.innerHTML = '<div class="time-slot"><div class="range">Pick a date above to see available times.</div></div>';
-  }
+    container.appendChild(card);
+  });
 }
 
 /* ------------------------- Fetch slots (cached) -------------------------- */
-async function ensureSlots(opts){
-  const key = JSON.stringify(opts||{});
-  if (slotsCache && slotsCache.key === key) return slotsCache.data;
-
+async function ensureSlots(){
+  if (slotsCache) return slotsCache;
   overlay(true, 'Loading available times…');
-  let url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
-  const qs = new URLSearchParams();
-  if (opts?.formKind) qs.set('formKind', opts.formKind);
-  if (opts?.calendarSite) qs.set('calendarSite', opts.calendarSite);
-  if (qs.toString()) url += (url.includes('?') ? '&' : '?') + qs.toString();
-
+  const url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
   try{
     const resp = await fetch(url, { method:'GET', headers:{'Accept':'application/json'} });
     const text = await resp.text();
@@ -1103,10 +1001,9 @@ async function ensureSlots(opts){
                : (Array.isArray(data.free_slots) ? data.free_slots
                : (Array.isArray(data.freeSlots) ? data.freeSlots
                : (Array.isArray(data.slots) ? data.slots : [])));
-    const parsed = list.map(parseSlotString);
-    slotsCache = { key, data: parsed };
-    return parsed;
-  }catch(e){ console.error(e); showError('Failed to load available appointment times. Please try again.'); return []; }
+    slotsCache = list.map(parseSlotString);
+    return slotsCache;
+  }catch(e){ console.error(e); showErrorAndScroll('Failed to load available appointment times. Please try again.'); return []; } // MODIFIED
   finally{ overlay(false); }
 }
 
@@ -1150,40 +1047,42 @@ function getCheckedLocation(flow){
   return { ok:true, value:picked[0] };
 }
 function validateSelfFlow(){
-  if (!document.getElementById('selfConfirm18')?.checked){ showError('Please confirm you are an individual 18+.'); return false; }
+  if (!document.getElementById('selfConfirm18')?.checked){ showErrorAndScroll('Please confirm you are an individual 18+.'); return false; } // MODIFIED
   const first=(document.getElementById('selfFirstName')?.value||'').trim();
   const last =(document.getElementById('selfLastName')?.value||'').trim();
   const email=(document.getElementById('selfEmail')?.value||'').trim();
   const phone=(document.getElementById('selfPhone')?.value||'').trim();
   const dob  =(document.getElementById('selfDob')?.value||'').trim();
-  if(!first||!last){ showError('Please enter your first and last name.'); return false; }
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showError('Please enter a valid email.'); return false; }
-  if(phone.replace(/\D/g,'').length<7){ showError('Please enter a valid phone number.'); return false; }
-  const age=calcAgeFromDOBStr(dob); if(age===null||age<18){ showError('This flow is for individuals 18+.'); return false; }
-  applyVisitType('self'); if(!visitPlan.self.type){ showError('Please select First-Time or Follow-Up.'); return false; }
-  if(!selectedSlot.self){ showError('Please choose an available time.'); return false; }
-  const loc=getCheckedLocation('self'); if(!loc.ok){ showError(loc.msg); return false; }
-  if(!document.getElementById('selfConsent')?.checked){ showError('Please consent to reminders.'); return false; }
-  if(!document.getElementById('selfEmergency')?.checked){ showError('Please confirm you are not experiencing an emergency.'); return false; }
+  if(!first||!last){ showErrorAndScroll('Please enter your first and last name.'); return false; } // MODIFIED
+  // MODIFIED: Check email only if provided
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showErrorAndScroll('Please enter a valid email or leave it blank.'); return false; }
+  if(phone.replace(/\D/g,'').length<7){ showErrorAndScroll('Please enter a valid phone number.'); return false; } // MODIFIED
+  const age=calcAgeFromDOBStr(dob); if(age===null||age<18){ showErrorAndScroll('This flow is for individuals 18+.'); return false; } // MODIFIED
+  applyVisitType('self'); if(!visitPlan.self.type){ showErrorAndScroll('Please select First-Time or Follow-Up.'); return false; } // MODIFIED
+  if(!selectedSlot.self){ showErrorAndScroll('Please choose an available time.'); return false; } // MODIFIED
+  const loc=getCheckedLocation('self'); if(!loc.ok){ showErrorAndScroll(loc.msg); return false; } // MODIFIED
+  if(!document.getElementById('selfConsent')?.checked){ showErrorAndScroll('Please consent to reminders.'); return false; } // MODIFIED
+  if(!document.getElementById('selfEmergency')?.checked){ showErrorAndScroll('Please confirm you are not experiencing an emergency.'); return false; } // MODIFIED
   return true;
 }
 function validateGuardianFlow(){
-  if (!document.getElementById('guardianConfirm18')?.checked){ showError('Please confirm you are a parent/guardian 18+.'); return false; }
+  if (!document.getElementById('guardianConfirm18')?.checked){ showErrorAndScroll('Please confirm you are a parent/guardian 18+.'); return false; } // MODIFIED
   const gf=(document.getElementById('guardFirstName')?.value||'').trim();
   const gl=(document.getElementById('guardLastName')?.value||'').trim();
   const ge=(document.getElementById('guardEmail')?.value||'').trim();
   const gp=(document.getElementById('guardPhone')?.value||'').trim();
-  if(!gf||!gl){ showError('Please enter parent/guardian name.'); return false; }
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ge)){ showError('Please enter a valid parent/guardian email.'); return false; }
-  if(gp.replace(/\D/g,'').length<7){ showError('Please enter a valid parent/guardian phone.'); return false; }
+  if(!gf||!gl){ showErrorAndScroll('Please enter parent/guardian name.'); return false; } // MODIFIED
+  // MODIFIED: Check email only if provided
+  if(ge && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ge)){ showErrorAndScroll('Please enter a valid parent/guardian email or leave it blank.'); return false; }
+  if(gp.replace(/\D/g,'').length<7){ showErrorAndScroll('Please enter a valid parent/guardian phone number.'); return false; } // MODIFIED
   const people = collectIndividuals();
-  if(people.length===0){ showError('Please add at least one individual.'); return false; }
-  for (let i=0;i<people.length;i++){ if(!people[i].first||!people[i].last||!people[i].dob){ showError('Please complete each individual’s first name, last name, and DOB.'); return false; } }
-  applyVisitType('guardian'); if(!visitPlan.guardian.type){ showError('Please select First-Time or Follow-Up.'); return false; }
-  if(!selectedSlot.guardian){ showError('Please choose an available time.'); return false; }
-  const loc=getCheckedLocation('guardian'); if(!loc.ok){ showError(loc.msg); return false; }
-  if(!document.getElementById('guardConsent')?.checked){ showError('Please consent to reminders.'); return false; }
-  if(!document.getElementById('guardEmergency')?.checked){ showError('Please confirm you are not experiencing an emergency.'); return false; }
+  if(people.length===0){ showErrorAndScroll('Please add at least one individual.'); return false; } // MODIFIED
+  for (let i=0;i<people.length;i++){ if(!people[i].first||!people[i].last||!people[i].dob){ showErrorAndScroll('Please complete each individual’s first name, last name, and DOB.'); return false; } } // MODIFIED
+  applyVisitType('guardian'); if(!visitPlan.guardian.type){ showErrorAndScroll('Please select First-Time or Follow-Up.'); return false; } // MODIFIED
+  if(!selectedSlot.guardian){ showErrorAndScroll('Please choose an available time.'); return false; } // MODIFIED
+  const loc=getCheckedLocation('guardian'); if(!loc.ok){ showErrorAndScroll(loc.msg); return false; } // MODIFIED
+  if(!document.getElementById('guardConsent')?.checked){ showErrorAndScroll('Please consent to reminders.'); return false; } // MODIFIED
+  if(!document.getElementById('guardEmergency')?.checked){ showErrorAndScroll('Please confirm you are not experiencing an emergency.'); return false; } // MODIFIED
   return true;
 }
 
@@ -1219,10 +1118,22 @@ function showConfirmation(opts){
       btn.className = 'btn btn-primary';
       btn.textContent = 'Book another appointment';
       btn.addEventListener('click', function(){
-        // Reset the form and hide the confirmation so user can start over
+        // MODIFIED: Restore containers
+        var fg = document.querySelector('.flow-grid');
+        var bg = document.querySelector('.button-group');
+        if (fg) fg.style.display = ''; // Reset to default
+        if (bg) bg.style.display = ''; // Reset to default
+
+        // Reset the form (this also hides confirmation card)
         clearAll(false);
+        
+        // NEW: Manually trigger visibility update to restore initial state
+        if (typeof updateFlowVisibility === 'function') {
+            updateFlowVisibility();
+        }
+        
+        // Scroll and focus
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        // Put focus on the first flow toggle for convenience
         (document.getElementById('selfConfirm18') || document.getElementById('guardianConfirm18'))?.focus?.();
       });
       actions.prepend(btn);
@@ -1243,7 +1154,6 @@ async function submitSelf(){
   const phone=(document.getElementById('selfPhone')?.value||'').trim();
   const dob  =(document.getElementById('selfDob')?.value||'').trim();
   const loc  = getCheckedLocation('self').value;
-  const calendarSite = getPhysicianSiteKeyFromLocationText(loc);
 
   try{ localStorage.setItem('sw_client_name', first+' '+last); localStorage.setItem('sw_client_phone', phone); }catch{}
 
@@ -1270,14 +1180,17 @@ async function submitSelf(){
     end:   { dateTime:endDT,   timeZone: CONFIG.TIMEZONE },
     expectedDate: selectedSlot.self.y+'-'+p2(selectedSlot.self.m)+'-'+p2(selectedSlot.self.d),
     location: { displayName: 'In-Office — '+loc },
-    attendees: [{ address: email, name: first+' '+last, type:'required' }],
+    attendees: [], // MODIFIED: Start with empty
     allowNewTimeProposals: true,
     transactionId: generateUUID(),
     visitType: visitPlan.self.type,
-    dob, over18:'yes', guardian:null, household:null,
-    formKind: 'physician',
-    calendarSite // 'Augusta' | 'Macon' | null
+    dob, over18:'yes', guardian:null, household:null
   };
+
+  // MODIFIED: Only add attendee if email is provided
+  if (email) {
+      payload.attendees.push({ address: email, name: first+' '+last, type:'required' });
+  }
 
   const resp = await fetch(withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY), {
     method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(payload)
@@ -1286,17 +1199,14 @@ async function submitSelf(){
   const result = await resp.json();
   showSuccess();
   showConfirmation({ whenText: friendlyStartFromSelected('self'), locationText: loc, webLink: result?.webLink||null });
+  
+  // MODIFIED: Hide form after success
+  document.querySelector('.flow-grid').style.display = 'none';
+  document.querySelector('.button-group').style.display = 'none';
+
   // Clear the form but keep confirmation visible
   clearAll(true);
 }
-
-function getPhysicianSiteKeyFromLocationText(locText){
-  const s = (locText || '').toLowerCase();
-  if (s.includes('augusta')) return 'Augusta';
-  if (s.includes('macon')) return 'Macon';
-  return null;
-}
-
 
 async function submitGuardian(){
   const gf=(document.getElementById('guardFirstName')?.value||'').trim();
@@ -1304,7 +1214,6 @@ async function submitGuardian(){
   const ge=(document.getElementById('guardEmail')?.value||'').trim();
   const gp=(document.getElementById('guardPhone')?.value||'').trim();
   const loc = getCheckedLocation('guardian').value;
-  const calendarSite = getPhysicianSiteKeyFromLocationText(loc);
 
   const people = collectIndividuals();
   applyVisitType('guardian');
@@ -1338,16 +1247,19 @@ async function submitGuardian(){
     end:   { dateTime:endDT,   timeZone: CONFIG.TIMEZONE },
     expectedDate: selectedSlot.guardian.y+'-'+p2(selectedSlot.guardian.m)+'-'+p2(selectedSlot.guardian.d),
     location: { displayName: 'In-Office — '+loc },
-    attendees: [{ address: ge, name: gf+' '+gl, type:'required' }],
+    attendees: [], // MODIFIED: Start empty
     allowNewTimeProposals: true,
     transactionId: generateUUID(),
     visitType: visitPlan.guardian.type,
     over18:'yes',
     guardian: { name: gf+' '+gl, phone: gp, email: ge },
-    household,
-    formKind: 'physician',
-    calendarSite
+    household
   };
+
+  // MODIFIED: Only add attendee if email is provided
+  if (ge) {
+      payload.attendees.push({ address: ge, name: gf+' '+gl, type:'required' });
+  }
 
   const resp = await fetch(withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY), {
     method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(payload)
@@ -1356,6 +1268,11 @@ async function submitGuardian(){
   const result = await resp.json();
   showSuccess();
   showConfirmation({ whenText: friendlyStartFromSelected('guardian'), locationText: loc, webLink: result?.webLink||null });
+  
+  // MODIFIED: Hide form after success
+  document.querySelector('.flow-grid').style.display = 'none';
+  document.querySelector('.button-group').style.display = 'none';
+  
   // Clear the form but keep confirmation visible
   clearAll(true);
 }
@@ -1366,8 +1283,8 @@ async function handleSubmit(e){
   hideMessages();
   const selfC = document.getElementById('selfConfirm18')?.checked || false;
   const guardC = document.getElementById('guardianConfirm18')?.checked || false;
-  if (!selfC && !guardC){ showError('Please choose a flow: Individual (18+) or Parent/Guardian (18+).'); return; }
-  if (selfC && guardC){ showError('Please use one flow at a time. Uncheck one of the confirmations.'); return; }
+  if (!selfC && !guardC){ showErrorAndScroll('Please choose a flow: Individual (18+) or Parent/Guardian (18+).'); return; } // MODIFIED
+  if (selfC && guardC){ showErrorAndScroll('Please use one flow at a time. Uncheck one of the confirmations.'); return; } // MODIFIED
 
   const btn=document.getElementById('submitBtn');
   const spin=document.getElementById('submitSpinner');
@@ -1377,7 +1294,7 @@ async function handleSubmit(e){
   try{
     if (selfC){ if (!validateSelfFlow()) return; await submitSelf(); }
     else { if (!validateGuardianFlow()) return; await submitGuardian(); }
-  }catch(err){ console.error(err); showError('There was an error booking your appointment. Please try again or call the office.'); }
+  }catch(err){ console.error(err); showErrorAndScroll('There was an error booking your appointment. Please try again or call the office.'); } // MODIFIED
   finally{ if(btn) btn.disabled=false; if(spin) spin.classList?.add('hidden'); overlay(false); }
 }
 
@@ -1396,7 +1313,6 @@ function formatPhoneInput(el){
 function clearAll(keepConfirmation){
   document.getElementById('physForm')?.reset();
   selectedSlot.self=null; selectedSlot.guardian=null;
-  selectedDate.self=null;  selectedDate.guardian=null;
   visitPlan.self={type:null,durationMin:30,stepMin:15};
   visitPlan.guardian={type:null,durationMin:30,stepMin:15};
   const tsS=document.getElementById('timeSlotsSelf'); if(tsS) tsS.innerHTML='';
@@ -1421,6 +1337,8 @@ function clearAll(keepConfirmation){
     `;
     list.appendChild(seed);
   }
+
+  // MODIFIED: Flow visibility update is handled by the buttons that call this
 }
 function makeCheckboxesMutuallyExclusive(aId,bId){
   const a=document.getElementById(aId), b=document.getElementById(bId);
@@ -1433,36 +1351,70 @@ document.addEventListener('DOMContentLoaded', function(){
   formatPhoneInput(document.getElementById('selfPhone'));
   formatPhoneInput(document.getElementById('guardPhone'));
 
-  // Flow toggles mutually exclusive
-  const selfC=document.getElementById('selfConfirm18');
-  const guardC=document.getElementById('guardianConfirm18');
-  if(selfC&&guardC){
-    selfC.addEventListener('change', function(){ if(selfC.checked) guardC.checked=false; });
-    guardC.addEventListener('change', function(){ if(guardC.checked) selfC.checked=false; });
+  // MODIFIED: Flow toggles and visibility control
+  const selfC = document.getElementById('selfConfirm18');
+  const guardC = document.getElementById('guardianConfirm18');
+  const flowSelfEl = document.getElementById('flowSelf');
+  const flowGuardianEl = document.getElementById('flowGuardian');
+  
+  // MODIFIED: Assign to the outer-scope variable
+  updateFlowVisibility = function() {
+      const selfChecked = selfC.checked;
+      const guardChecked = guardC.checked;
+      const grid = document.querySelector('.flow-grid'); // Get parent grid
+
+      if (selfChecked) {
+          flowSelfEl.classList.add('flow-active');
+          flowGuardianEl.classList.remove('flow-active');
+          flowGuardianEl.style.display = 'none';
+          flowSelfEl.style.display = 'block';
+          // NEW: Change grid layout to center
+          if (grid) {
+              grid.style.display = 'flex';
+              grid.style.justifyContent = 'center';
+          }
+      } else if (guardChecked) {
+          flowGuardianEl.classList.add('flow-active');
+          flowSelfEl.classList.remove('flow-active');
+          flowSelfEl.style.display = 'none';
+          flowGuardianEl.style.display = 'block';
+          // NEW: Change grid layout to center
+          if (grid) {
+              grid.style.display = 'flex';
+              grid.style.justifyContent = 'center';
+          }
+      } else {
+          // Initial/reset state
+          flowSelfEl.classList.remove('flow-active');
+          flowGuardianEl.classList.remove('flow-active');
+          flowSelfEl.style.display = 'block';
+          flowGuardianEl.style.display = 'block';
+          // NEW: Restore grid layout to 2-column
+          if (grid) {
+              grid.style.display = 'grid'; // Back to grid
+              grid.style.justifyContent = ''; // Remove centering
+          }
+      }
   }
+
+  if (selfC && guardC && flowSelfEl && flowGuardianEl) {
+      selfC.addEventListener('change', function() {
+          if (selfC.checked) guardC.checked = false;
+          updateFlowVisibility();
+      });
+      guardC.addEventListener('change', function() {
+          if (guardC.checked) selfC.checked = false;
+          updateFlowVisibility();
+      });
+      
+      // Run on load to set initial state (both hidden)
+      updateFlowVisibility();
+  }
+  // END MODIFIED
 
   // Locations act like radios per flow
   makeCheckboxesMutuallyExclusive('selfLocAugusta','selfLocMacon');
   makeCheckboxesMutuallyExclusive('guardLocAugusta','guardLocMacon');
-  // Locations act like radios per flow
-makeCheckboxesMutuallyExclusive('selfLocAugusta','selfLocMacon');
-['selfLocAugusta','selfLocMacon'].forEach(id=>{
-  document.getElementById(id)?.addEventListener('change', ()=> clearInlineError('selfLocError'));
-});
-
-makeCheckboxesMutuallyExclusive('guardLocAugusta','guardLocMacon');
-['guardLocAugusta','guardLocMacon'].forEach(id=>{
-  document.getElementById(id)?.addEventListener('change', ()=> clearInlineError('guardLocError'));
-});
-
-// Clear visit type inline errors on change
-document.querySelectorAll('input[name="firstTimeSelf"]').forEach(r=>{
-  r.addEventListener('change', ()=> clearInlineError('selfTypeError'));
-});
-document.querySelectorAll('input[name="firstTimeGuardian"]').forEach(r=>{
-  r.addEventListener('change', ()=> clearInlineError('guardTypeError'));
-});
-
 
   // Visit type radios -> re-render if slots are loaded
   document.querySelectorAll('input[name="firstTimeSelf"]').forEach(function(r){
@@ -1473,52 +1425,27 @@ document.querySelectorAll('input[name="firstTimeGuardian"]').forEach(r=>{
   });
 
   // Load slots per flow
- document.getElementById('loadSlotsSelfBtn')?.addEventListener('click', async function(){
-  applyVisitType('self');
-  if(!visitPlan.self.type){
-    showInlineError('selfTypeError', 'Please select First-Time or Follow-Up.');
-    return;
-  }
-  clearInlineError('selfTypeError');
-
-  const loc = getCheckedLocation('self');
-  if(!loc.ok){
-    showInlineError('selfLocError', 'Please select a preferred location first.');
-    return;
-  }
-  clearInlineError('selfLocError');
-
-  const site = getPhysicianSiteKeyFromLocationText(loc.value);
-  const slots = await ensureSlots({ formKind: 'physician', calendarSite: site });
-  displaySlotsForFlow('self', slots);
-});
-
+  document.getElementById('loadSlotsSelfBtn')?.addEventListener('click', async function(){
+    applyVisitType('self'); if(!visitPlan.self.type){ showErrorAndScroll('Please select whether this is your first visit or a follow-up.'); return; } // MODIFIED
+    const slots = await ensureSlots(); displaySlotsForFlow('self', slots);
+  });
   document.getElementById('loadSlotsGuardianBtn')?.addEventListener('click', async function(){
-  applyVisitType('guardian');
-  if(!visitPlan.guardian.type){
-    showInlineError('guardTypeError', 'Please select First-Time or Follow-Up.');
-    return;
-  }
-  clearInlineError('guardTypeError');
-
-  const loc = getCheckedLocation('guardian');
-  if(!loc.ok){
-    showInlineError('guardLocError', 'Please select a preferred location first.');
-    return;
-  }
-  clearInlineError('guardLocError');
-
-  const site = getPhysicianSiteKeyFromLocationText(loc.value);
-  const slots = await ensureSlots({ formKind: 'physician', calendarSite: site });
-  displaySlotsForFlow('guardian', slots);
-});
+    applyVisitType('guardian'); if(!visitPlan.guardian.type){ showErrorAndScroll('Please select whether this is your first visit or a follow-up.'); return; } // MODIFIED
+    const slots = await ensureSlots(); displaySlotsForFlow('guardian', slots);
+  });
 
   // Add +Individuals
   document.getElementById('addIndividualBtn')?.addEventListener('click', addIndividualCard);
 
   // Submit & Clear
   document.getElementById('physForm')?.addEventListener('submit', handleSubmit);
-  document.getElementById('clearFormBtn')?.addEventListener('click', function(){ clearAll(false); });
+  document.getElementById('clearFormBtn')?.addEventListener('click', function(){ 
+      clearAll(false); 
+      // NEW: Manually trigger visibility update
+      if (typeof updateFlowVisibility === 'function') {
+          updateFlowVisibility();
+      }
+  });
 
   // Prefill convenience
   try{
