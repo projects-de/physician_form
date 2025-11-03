@@ -542,7 +542,9 @@ input[type="email"]{
   display: block;
 }
 
-
+#loadSlotsGuardianBtn {
+            display: none;
+        }
   </style>
 </head>
 <body>
@@ -824,6 +826,7 @@ input[type="email"]{
 /* ==============================================================
    Still Waters – Physician Scheduler (Two Flows)
    MODIFIED: Integrates /FindConsecutiveSlots for Guardian Flow
+   MODIFIED: Hides Guardian Slot button until prerequisites are met
    ============================================================== */
 
 var CONFIG = {
@@ -856,6 +859,7 @@ var visitPlan = {
   guardian: { type: null, durationMin: 30, stepMin: 15 }
 };
 var updateFlowVisibility;
+var updateGuardianSlotButtonVisibility; // NEW: For showing/hiding slot button
 
 /* ------------------------- Utilities -------------------------- */
 function withKey(url, key) {
@@ -875,6 +879,26 @@ function localDow(y,m,d){ return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new
 function getQueryParam(name){ var m=new RegExp('[?&]'+name+'=([^&#]*)').exec(window.location.search); return m?decodeURIComponent(m[1].replace(/\+/g,'%20')):null; }
 function referralAddressText(){ return getQueryParam('address') || CONFIG.CLINIC_ADDRESS || ''; }
 function calcAgeFromDOBStr(dobStr){ var d=new Date(dobStr); if(isNaN(d))return null; var t=new Date(); var a=t.getFullYear()-d.getFullYear(); var m=t.getMonth()-d.getMonth(); if(m<0||(m===0&&t.getDate()<d.getDate()))a--; return a; }
+
+/* ------------------------- NEW: Prerequisite Check (Guardian) -------------------------- */
+function checkGuardianPrerequisites() {
+    // This is a "silent" check, no errors shown
+    const gf = (document.getElementById('guardFirstName')?.value || '').trim();
+    const gl = (document.getElementById('guardLastName')?.value || '').trim();
+    const gp = (document.getElementById('guardPhone')?.value || '').trim();
+    const loc = getCheckedLocation('guardian'); // {ok: true/false}
+    const visitType = document.querySelector('input[name="firstTimeGuardian"]:checked');
+    
+    const people = collectIndividuals();
+    if (people.length === 0) return false;
+    
+    // Check that all added individuals are complete
+    const allIndividualsComplete = people.every(p => p.first && p.last && p.dob);
+    if (!allIndividualsComplete) return false;
+
+    // All checks passed
+    return gf && gl && gp.replace(/\D/g, '').length >= 7 && loc.ok && visitType;
+}
 
 /* ------------------------- Slot parsing (for Self flow) -------------------------- */
 function parseSlotString(slotStr){
@@ -1115,7 +1139,15 @@ function addIndividualCard(){
     </div>
     <div class="form-group"><label>BirthDate <span class="required">*</span></label><input type="date" /></div>
   `;
-  div.querySelector('.btn-remove').addEventListener('click', function(){ div.remove(); });
+  
+  // MODIFIED: Call visibility check when "Remove" is clicked
+  div.querySelector('.btn-remove').addEventListener('click', function(){ 
+      div.remove();
+      if (typeof updateGuardianSlotButtonVisibility === 'function') {
+          updateGuardianSlotButtonVisibility();
+      }
+  });
+  
   list.appendChild(div);
 }
 function collectIndividuals(){
@@ -1414,7 +1446,7 @@ function formatPhoneInput(el){
 function clearAll(keepConfirmation){
   document.getElementById('physForm')?.reset();
   selectedSlot.self=null; selectedSlot.guardian=null;
-  visitPlan.self={type:null,durationMin:30,stepMin:15};
+  visitPlan.self={type:null,durationMin:30,stepMin:15,stepMin:15};
   visitPlan.guardian={type:null,durationMin:30,stepMin:15};
   const tsS=document.getElementById('timeSlotsSelf'); if(tsS) tsS.innerHTML='';
   const tsG=document.getElementById('timeSlotsGuardian'); if(tsG) tsG.innerHTML='';
@@ -1453,6 +1485,24 @@ document.addEventListener('DOMContentLoaded', function(){
   const guardC = document.getElementById('guardianConfirm18');
   const flowSelfEl = document.getElementById('flowSelf');
   const flowGuardianEl = document.getElementById('flowGuardian');
+  
+  // NEW: Get the guardian slot button
+  const loadSlotsGuardianBtn = document.getElementById('loadSlotsGuardianBtn');
+
+  // NEW: Define the handler function and assign to global var
+  updateGuardianSlotButtonVisibility = function() {
+      if (!loadSlotsGuardianBtn) return;
+      
+      if (checkGuardianPrerequisites()) {
+          loadSlotsGuardianBtn.style.display = 'inline-flex';
+      } else {
+          loadSlotsGuardianBtn.style.display = 'none';
+          // Also clear slots if prerequisites become invalid
+          const tsG=document.getElementById('timeSlotsGuardian'); 
+          if(tsG) tsG.innerHTML='';
+          selectedSlot.guardian = null;
+      }
+  }
   
   updateFlowVisibility = function() {
       const selfChecked = selfC.checked;
@@ -1499,6 +1549,10 @@ document.addEventListener('DOMContentLoaded', function(){
           updateFlowVisibility();
       });
       
+      // NEW: Add listeners to the guardian flow card to check prerequisites
+      flowGuardianEl.addEventListener('change', updateGuardianSlotButtonVisibility);
+      flowGuardianEl.addEventListener('keyup', updateGuardianSlotButtonVisibility);
+      
       updateFlowVisibility();
   }
 
@@ -1508,14 +1562,12 @@ document.addEventListener('DOMContentLoaded', function(){
   document.querySelectorAll('input[name="firstTimeSelf"]').forEach(function(r){
     r.addEventListener('change', function(){ applyVisitType('self'); if(slotsCache) displaySlotsForFlow('self', slotsCache); });
   });
-  // MODIFIED: This just applies the type. The slot loading button will read it.
+  
   document.querySelectorAll('input[name="firstTimeGuardian"]').forEach(function(r){
     r.addEventListener('change', function(){ 
         applyVisitType('guardian'); 
-        // Clear old slots if visit type changes, forcing user to reload
-        const tsG=document.getElementById('timeSlotsGuardian'); 
-        if(tsG) tsG.innerHTML='<p style="color: #a94442;">Visit type changed. Please click "Load Available Times" again.</p>';
-        selectedSlot.guardian = null;
+        // This will also trigger the 'change' listener on flowGuardianEl
+        // which will re-run updateGuardianSlotButtonVisibility
     });
   });
 
@@ -1525,21 +1577,21 @@ document.addEventListener('DOMContentLoaded', function(){
     const slots = await ensureSlots(); displaySlotsForFlow('self', slots);
   });
   
-  // MODIFIED: Load CONSECUTIVE slots for Guardian flow
+  // MODIFIED: This button is already hidden/shown. This just handles the click.
   document.getElementById('loadSlotsGuardianBtn')?.addEventListener('click', async function(){
     // 1. Get duration per person from radio buttons
     applyVisitType('guardian'); 
+    // Note: Prerequisites are already met if this button is visible
+    // but we can re-check key ones just in case.
     if(!visitPlan.guardian.type){ showErrorAndScroll('Please select "First time" (60 min) or "Follow-up" (30 min) per person.'); return; }
-    const slotDurationMinutes = visitPlan.guardian.durationMin; // 30 or 60
+    const slotDurationMinutes = visitPlan.guardian.durationMin;
 
     // 2. Get number of individuals
     const individuals = collectIndividuals();
     if (individuals.length === 0) { showErrorAndScroll('Please add at least one individual.'); return; }
-    // Check for empty fields in individuals
-    for (let i=0;i<individuals.length;i++){ if(!individuals[i].first||!individuals[i].last||!individuals[i].dob){ showErrorAndScroll('Please complete each individual’s first name, last name, and DOB.'); return; } }
     const numIndividuals = individuals.length;
 
-    // 3. Get location (for calendar selection on backend)
+    // 3. Get location
     const loc = getCheckedLocation('guardian');
     if (!loc.ok) { showErrorAndScroll(loc.msg); return; }
     const siteKey = loc.value.toLowerCase().includes('augusta') ? 'Augusta' : 'Macon';
@@ -1552,10 +1604,9 @@ document.addEventListener('DOMContentLoaded', function(){
     const params = new URLSearchParams({
         individuals: numIndividuals,
         slotDurationMinutes: slotDurationMinutes,
-        formKind: 'physician', // Hard-code as this is the physician form
+        formKind: 'physician',
         calendarSite: siteKey
     });
-    // Use withKey for the base URL, then append other params
     const baseUrl = withKey(CONFIG.GET_CONSECUTIVE_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
     const url = baseUrl + (baseUrl.includes('?') ? '&' : '?') + params.toString();
 
@@ -1578,7 +1629,11 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
   // Add +Individuals
-  document.getElementById('addIndividualBtn')?.addEventListener('click', addIndividualCard);
+  // MODIFIED: This now calls the visibility check
+  document.getElementById('addIndividualBtn')?.addEventListener('click', function() {
+      addIndividualCard();
+      updateGuardianSlotButtonVisibility();
+  });
 
   // Submit & Clear
   document.getElementById('physForm')?.addEventListener('submit', handleSubmit);
@@ -1586,6 +1641,10 @@ document.addEventListener('DOMContentLoaded', function(){
       clearAll(false); 
       if (typeof updateFlowVisibility === 'function') {
           updateFlowVisibility();
+      }
+      // NEW: Manually hide the guardian button on clear
+      if (typeof updateGuardianSlotButtonVisibility === 'function') {
+          updateGuardianSlotButtonVisibility();
       }
   });
 

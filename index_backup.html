@@ -379,6 +379,7 @@ input[type="email"]{
   border-radius: 16px;
   padding: 18px;
   box-shadow: var(--shadow);
+  align-items: center;
 }
 .flow-title{
   font-weight: 900;
@@ -528,34 +529,43 @@ input[type="email"]{
   .flow-grid{ gap: 16px; }
 }
 
+/* ===== NEW: Flow Control CSS ===== */
+/* Hide flow contents by default */
+.flow-card > .form-section,
+.flow-card > .btn-secondary { /* Targets #addIndividualBtn */
+  display: none;
+}
+
+/* When active, show them */
+.flow-card.flow-active > .form-section,
+.flow-card.flow-active > .btn-secondary {
+  display: block;
+}
+
 
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Header -->
     <div class="header">
-      <img src="logo.png" alt="Still Waters Logo" class="logo"style="border-radius:30px;" />
+  
       <h1>Still Waters Professional Counseling Services, Inc</h1>
       <h2>Schedule an appointment with a Physician.</h2>
-     
+      
       <div class="call-line">
         If you prefer to make your appointment by speaking to a Still Water’s employee call:<br>
         <strong>706-955-9224</strong>
-    </div>
-     <div class="emergency-notice">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/></svg>
-      <span>If you are experiencing an emergency, please dial 911 immediately</span>
-    </div>
+      </div>
+       <div class="emergency-notice">
+       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/></svg>
+       <span>If you are experiencing an emergency, please dial 911 immediately</span>
+     </div>
     </div>
 
-    <!-- Form -->
     <form id="physForm" class="form-container" novalidate>
-      <!-- Toasts (unchanged) -->
-<div id="successMessage" class="success-message">Appointment booked! You’ll receive a confirmation shortly.</div>
+      <div id="successMessage" class="success-message">Appointment booked! You’ll receive a confirmation shortly.</div>
 <div id="errorMessage" class="error-message">Something went wrong. Please try again.</div>
 
-<!-- Confirmation card (unchanged) -->
 <div id="confirmationCard" class="confirm-card" aria-live="polite">
   <h3>You're booked! 🎉</h3>
   <div class="confirm-row"><b>Date & time</b><span id="confWhen">—</span></div>
@@ -566,20 +576,16 @@ input[type="email"]{
   </div>
 </div>
 
-<!-- ===== Two Flows ===== -->
 <div class="flow-grid">
 
-  <!-- LEFT: Individual (18+) -->
   <div class="flow-card" id="flowSelf">
     <div class="flow-title">Individual (18+)</div>
 
-    <!-- Flow toggle -->
     <div class="flow-toggle">
       <input type="checkbox" id="selfConfirm18"/>
       <label for="selfConfirm18">I am an individual making an appointment with the physician and confirm that I am over the age of 18 <span class="required">*</span></label>
     </div>
 
-    <!-- Your information -->
     <div class="form-section">
       <h2>Your Information</h2>
       <div class="form-row">
@@ -594,7 +600,7 @@ input[type="email"]{
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="selfEmail">Email Address <span class="required">*</span></label>
+          <label for="selfEmail">Email Address</label>
           <input type="email" id="selfEmail" autocomplete="email"/>
         </div>
         <div class="form-group">
@@ -608,7 +614,6 @@ input[type="email"]{
       </div>
     </div>
 
-    <!-- Preferred Location -->
     <div class="form-section">
       <h2>Preferred Location</h2>
       <div class="choice-group">
@@ -624,7 +629,6 @@ input[type="email"]{
       <p class="section-hint">Select your preferred clinic location.</p>
     </div>
 
-    <!-- Visit type -->
     <div class="form-section">
       <h2>Visit Type</h2>
       <div class="radio-group">
@@ -640,7 +644,6 @@ input[type="email"]{
       <p class="section-hint">Starts offered every 15 minutes; first-time visits book 60m, follow-ups 30m.</p>
     </div>
 
-    <!-- Available Slots -->
     <div class="form-section">
       <h2>Select Appointment Time</h2>
       <div class="form-group">
@@ -650,7 +653,6 @@ input[type="email"]{
       <p class="section-hint">Only start times are shown. End time is calculated automatically.</p>
     </div>
 
-    <!-- Additional Info -->
     <div class="form-section">
       <h2>Additional Information</h2>
       <div class="form-group">
@@ -663,7 +665,6 @@ input[type="email"]{
       </div>
     </div>
 
-    <!-- Consent -->
     <div class="form-section">
       <h2>Consent &amp; Acknowledgements</h2>
       <label class="choice-option">
@@ -677,17 +678,14 @@ input[type="email"]{
     </div>
   </div>
 
-  <!-- RIGHT: Parent / Guardian (18+) -->
   <div class="flow-card" id="flowGuardian">
     <div class="flow-title">Parent or Guardian (18+)</div>
 
-    <!-- Flow toggle -->
     <div class="flow-toggle">
       <input type="checkbox" id="guardianConfirm18"/>
       <label for="guardianConfirm18">I am parent or guardian of an individual(s) making an appointment with the physician and confirm I am over the age of 18 <span class="required">*</span></label>
     </div>
 
-    <!-- Guardian info -->
     <div class="form-section">
       <h2>Parent/Guardian Information</h2>
       <div class="form-row">
@@ -702,7 +700,7 @@ input[type="email"]{
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label for="guardEmail">Email Address (Parent or Guardian) <span class="required">*</span></label>
+          <label for="guardEmail">Email Address (Parent or Guardian)</label>
           <input type="email" id="guardEmail"/>
         </div>
         <div class="form-group">
@@ -712,7 +710,6 @@ input[type="email"]{
       </div>
     </div>
 
-    <!-- Individuals Seeking Services -->
     <div class="form-section">
       <h2><b>Individuals Seeking Services</b></h2>
 
@@ -742,7 +739,6 @@ input[type="email"]{
       <p class="section-hint">Add each person who will be seen by the physician.</p>
     </div>
 
-    <!-- Preferred Location -->
     <div class="form-section">
       <h2>Preferred Location</h2>
       <div class="choice-group">
@@ -757,9 +753,8 @@ input[type="email"]{
       </div>
     </div>
 
-    <!-- Visit type -->
     <div class="form-section">
-      <h2>Visit Type</h2>
+      <h2>Visit Type (Per Individual)</h2>
       <div class="radio-group">
         <label class="radio-option">
           <input type="radio" name="firstTimeGuardian" value="yes"/>
@@ -772,17 +767,15 @@ input[type="email"]{
       </div>
     </div>
 
-    <!-- Available Slots -->
     <div class="form-section">
       <h2>Available Slots</h2>
       <div class="form-group">
         <button type="button" class="btn btn-secondary" id="loadSlotsGuardianBtn">Load Available Times</button>
       </div>
       <div id="timeSlotsGuardian" class="time-slots" aria-live="polite"></div>
-      <p class="section-hint">Choose a start time that works for your household.</p>
+      <p class="section-hint">Available times are calculated based on the number of individuals and visit type selected.</p>
     </div>
 
-    <!-- Additional Info -->
     <div class="form-section">
       <h2>Additional Information</h2>
       <div class="form-group">
@@ -795,7 +788,6 @@ input[type="email"]{
       </div>
     </div>
 
-    <!-- Consent -->
     <div class="form-section">
       <h2>Consent &amp; Acknowledgements</h2>
       <label class="choice-option">
@@ -810,7 +802,6 @@ input[type="email"]{
   </div>
 </div>
 
-<!-- Actions (keep your existing IDs/buttons so your current JS still binds later) -->
 <div class="button-group">
   <button type="button" class="btn btn-secondary" id="clearFormBtn">Clear Form</button>
   <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -822,7 +813,6 @@ input[type="email"]{
     </form>
   </div>
 
-  <!-- Loading overlay -->
   <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
     <div class="loading-content">
       <div class="spinner" aria-hidden="true"></div>
@@ -830,29 +820,42 @@ input[type="email"]{
     </div>
   </div>
 
- <script>
-/* =========================
+<script>
+/* ==============================================================
    Still Waters – Physician Scheduler (Two Flows)
-   JS ONLY — drop-in replacement
-   ========================= */
+   MODIFIED: Integrates /FindConsecutiveSlots for Guardian Flow
+   ============================================================== */
 
 var CONFIG = {
+  // This endpoint is for the Individual (Self) Flow
   GET_SLOTS_URL: 'https://sw-function-b6c4h9cnexhbh4g3.canadacentral-01.azurewebsites.net/api/Calender',
+  
+  // NEW: This endpoint is for the multi-person Guardian Flow
+  GET_CONSECUTIVE_SLOTS_URL: 'https://sw-function-b6c4h9cnexhbh4g3.canadacentral-01.azurewebsites.net/api/FindConsecutiveSlots',
+
+  // This endpoint is used by both flows
   BOOK_APPOINTMENT_URL: 'https://sw-function-b6c4h9cnexhbh4g3.canadacentral-01.azurewebsites.net/api/CreateEvent',
+  
+  // Add your function keys here if required
   GET_SLOTS_KEY: '',
   BOOK_APPOINTMENT_KEY: '',
-  TIMEZONE: 'Central Standard Time',
+  
+  TIMEZONE: 'Central Standard Time', // This MUST match your backend's WORK_TZ_WINDOWS
   CLINIC_NAME: 'Still Waters Professional Counseling – Clinic',
   CLINIC_ADDRESS: '3711 Executive Center Dr. Augusta, GA 30907 '
 };
 
 /* ------------------------- State -------------------------- */
-var slotsCache = null;
-var selectedSlot = { self: null, guardian: null };
+var slotsCache = null; // Cache for the Individual (Self) flow only
+var selectedSlot = { 
+    self: null,      // Stores { y, m, d, start, durationMin, stepMin }
+    guardian: null   // Stores { block_start_iso, block_end_iso, timeZone, friendlyText }
+};
 var visitPlan = {
   self:     { type: null, durationMin: 30, stepMin: 15 },
   guardian: { type: null, durationMin: 30, stepMin: 15 }
 };
+var updateFlowVisibility;
 
 /* ------------------------- Utilities -------------------------- */
 function withKey(url, key) {
@@ -873,7 +876,7 @@ function getQueryParam(name){ var m=new RegExp('[?&]'+name+'=([^&#]*)').exec(win
 function referralAddressText(){ return getQueryParam('address') || CONFIG.CLINIC_ADDRESS || ''; }
 function calcAgeFromDOBStr(dobStr){ var d=new Date(dobStr); if(isNaN(d))return null; var t=new Date(); var a=t.getFullYear()-d.getFullYear(); var m=t.getMonth()-d.getMonth(); if(m<0||(m===0&&t.getDate()<d.getDate()))a--; return a; }
 
-/* ------------------------- Slot parsing -------------------------- */
+/* ------------------------- Slot parsing (for Self flow) -------------------------- */
 function parseSlotString(slotStr){
   var parts = slotStr.split(', ');
   var datePart = parts[0], timePart = parts[1];
@@ -899,17 +902,23 @@ function groupByDate(slots){
 function applyVisitType(flow){
   var sel = document.querySelector('input[name="'+(flow==='self'?'firstTimeSelf':'firstTimeGuardian')+'"]:checked');
   visitPlan[flow].type = sel ? (sel.value==='yes'?'first':'followup') : null;
+  // This duration is used as "duration per person" in the Guardian flow
   if (visitPlan[flow].type==='first'){ visitPlan[flow].durationMin=60; visitPlan[flow].stepMin=30; }
   else { visitPlan[flow].durationMin=30; visitPlan[flow].stepMin=15; }
 }
 
 /* ------------------------- UI helpers -------------------------- */
+function showErrorAndScroll(msg){
+  showError(msg);
+  var el=document.getElementById('errorMessage');
+  if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+}
 function showSuccess(){ hideMessages(); var el=document.getElementById('successMessage'); if(el){ el.style.display='block'; setTimeout(function(){ el.style.display='none'; }, 5000);} }
 function showError(msg){ hideMessages(); var el=document.getElementById('errorMessage'); if(el){ el.textContent=msg||'Something went wrong.'; el.style.display='block'; setTimeout(function(){ el.style.display='none'; }, 6000);} }
 function hideMessages(){ var s=document.getElementById('successMessage'), e=document.getElementById('errorMessage'); if(s)s.style.display='none'; if(e)e.style.display='none'; }
 function overlay(on, text){ var ov=document.getElementById('loadingOverlay'); var msg=document.getElementById('overlayMessage'); if(!ov)return; if(typeof text==='string'&&msg) msg.textContent=text; ov.classList.toggle('active', !!on); }
 
-/* ------------------------- Render slots (FIXED selection) -------------------------- */
+/* ------------------------- Render slots (for Self flow) -------------------------- */
 function displaySlotsForFlow(flow, slots){
   const containerId = (flow==='self') ? 'timeSlotsSelf' : 'timeSlotsGuardian';
   const container = document.getElementById(containerId);
@@ -956,7 +965,6 @@ function displaySlotsForFlow(flow, slots){
 
         chip.addEventListener('click', (function(mm, day){
           return function(){
-            // unselect any previously selected chip in THIS FLOW ONLY
             container.querySelectorAll('.slot-chip.selected').forEach(function(el){ el.classList.remove('selected'); });
             this.classList.add('selected');
             selectedSlot[flow] = {
@@ -989,31 +997,105 @@ function displaySlotsForFlow(flow, slots){
   });
 }
 
-/* ------------------------- Fetch slots (cached) -------------------------- */
-async function ensureSlots(opts){
-  const key = JSON.stringify(opts||{});
-  if (slotsCache && slotsCache.key === key) return slotsCache.data;
+/* ------------------------- NEW: Render Consecutive slots (for Guardian flow) -------------------------- */
+function displayConsecutiveSlots(flow, data) {
+    const containerId = (flow === 'self') ? 'timeSlotsSelf' : 'timeSlotsGuardian';
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    selectedSlot[flow] = null; // Reset selection
 
+    const groups = data.available_groups;
+    if (!groups || groups.length === 0) {
+        const totalMins = data.inputs.total_minutes_needed;
+        const numPeople = data.inputs.individuals;
+        container.innerHTML = `<p>No available slots found for ${numPeople} people (${totalMins} minutes). Please try a different day or call the office.</p>`;
+        return;
+    }
+
+    const timeZone = data.work_tz_iana; // Get timezone from API response
+
+    // Group by date for display
+    const byDate = {};
+    groups.forEach(function(g) {
+        const key = g.display_date; // "Monday, 03 Nov 2025"
+        if (!byDate[key]) byDate[key] = [];
+        byDate[key].push(g);
+    });
+
+    // Sort keys by actual date
+    const keys = Object.keys(byDate).sort(function(a, b) {
+        try {
+            return new Date(a.split(', ')[1]) - new Date(b.split(', ')[1]);
+        } catch (e) {
+            return a.localeCompare(b); // Fallback
+        }
+    });
+
+    keys.forEach(function(key) {
+        const dayData = byDate[key];
+
+        const card = document.createElement('div');
+        card.className = 'time-slot';
+
+        const header = document.createElement('div');
+        header.className = 'date';
+        header.textContent = key; // Use the display_date
+
+        const grid = document.createElement('div');
+        grid.className = 'slot-grid';
+
+        dayData.forEach(function(group) {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'slot-chip';
+            chip.textContent = group.display_time_range; // "09:00 AM - 11:00 AM"
+
+            chip.addEventListener('click', function() {
+                // Unselect any previously selected chip
+                container.querySelectorAll('.slot-chip.selected').forEach(function(el) { el.classList.remove('selected'); });
+                this.classList.add('selected');
+                
+                // NEW: Store the block data required for submission
+                selectedSlot[flow] = {
+                    block_start_iso: group.block_start_iso,
+                    block_end_iso: group.block_end_iso,
+                    timeZone: timeZone,
+                    friendlyText: `${group.display_date}, ${group.display_time_range}`
+                };
+            });
+            
+            chip.addEventListener('keydown', function(ev){
+                if (ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); chip.click(); }
+            });
+
+            grid.appendChild(chip);
+        });
+        
+        card.appendChild(header);
+        card.appendChild(grid);
+        container.appendChild(card);
+    });
+}
+
+
+/* ------------------------- Fetch slots (for Self flow) -------------------------- */
+async function ensureSlots(){
+  if (slotsCache) return slotsCache;
   overlay(true, 'Loading available times…');
-  let url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
-  const qs = new URLSearchParams();
-  if (opts?.formKind) qs.set('formKind', opts.formKind);
-  if (opts?.calendarSite) qs.set('calendarSite', opts.calendarSite);
-  if (qs.toString()) url += (url.includes('?') ? '&' : '?') + qs.toString();
-
+  const url = withKey(CONFIG.GET_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
   try{
     const resp = await fetch(url, { method:'GET', headers:{'Accept':'application/json'} });
     const text = await resp.text();
     if (!resp.ok) throw new Error('Failed to load slots ('+resp.status+')');
     const data = text ? JSON.parse(text) : {};
     const list = Array.isArray(data) ? data
-               : (Array.isArray(data.free_slots) ? data.free_slots
-               : (Array.isArray(data.freeSlots) ? data.freeSlots
-               : (Array.isArray(data.slots) ? data.slots : [])));
-    const parsed = list.map(parseSlotString);
-    slotsCache = { key, data: parsed };
-    return parsed;
-  }catch(e){ console.error(e); showError('Failed to load available appointment times. Please try again.'); return []; }
+            : (Array.isArray(data.free_slots) ? data.free_slots
+            : (Array.isArray(data.freeSlots) ? data.freeSlots
+            : (Array.isArray(data.slots) ? data.slots : [])));
+    slotsCache = list.map(parseSlotString);
+    return slotsCache;
+  }catch(e){ console.error(e); showErrorAndScroll('Failed to load available appointment times. Please try again.'); return []; }
   finally{ overlay(false); }
 }
 
@@ -1057,40 +1139,40 @@ function getCheckedLocation(flow){
   return { ok:true, value:picked[0] };
 }
 function validateSelfFlow(){
-  if (!document.getElementById('selfConfirm18')?.checked){ showError('Please confirm you are an individual 18+.'); return false; }
+  if (!document.getElementById('selfConfirm18')?.checked){ showErrorAndScroll('Please confirm you are an individual 18+.'); return false; }
   const first=(document.getElementById('selfFirstName')?.value||'').trim();
   const last =(document.getElementById('selfLastName')?.value||'').trim();
   const email=(document.getElementById('selfEmail')?.value||'').trim();
   const phone=(document.getElementById('selfPhone')?.value||'').trim();
   const dob  =(document.getElementById('selfDob')?.value||'').trim();
-  if(!first||!last){ showError('Please enter your first and last name.'); return false; }
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showError('Please enter a valid email.'); return false; }
-  if(phone.replace(/\D/g,'').length<7){ showError('Please enter a valid phone number.'); return false; }
-  const age=calcAgeFromDOBStr(dob); if(age===null||age<18){ showError('This flow is for individuals 18+.'); return false; }
-  applyVisitType('self'); if(!visitPlan.self.type){ showError('Please select First-Time or Follow-Up.'); return false; }
-  if(!selectedSlot.self){ showError('Please choose an available time.'); return false; }
-  const loc=getCheckedLocation('self'); if(!loc.ok){ showError(loc.msg); return false; }
-  if(!document.getElementById('selfConsent')?.checked){ showError('Please consent to reminders.'); return false; }
-  if(!document.getElementById('selfEmergency')?.checked){ showError('Please confirm you are not experiencing an emergency.'); return false; }
+  if(!first||!last){ showErrorAndScroll('Please enter your first and last name.'); return false; }
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showErrorAndScroll('Please enter a valid email or leave it blank.'); return false; }
+  if(phone.replace(/\D/g,'').length<7){ showErrorAndScroll('Please enter a valid phone number.'); return false; }
+  const age=calcAgeFromDOBStr(dob); if(age===null||age<18){ showErrorAndScroll('This flow is for individuals 18+.'); return false; }
+  applyVisitType('self'); if(!visitPlan.self.type){ showErrorAndScroll('Please select First-Time or Follow-Up.'); return false; }
+  if(!selectedSlot.self){ showErrorAndScroll('Please choose an available time.'); return false; } // Checks old slot format
+  const loc=getCheckedLocation('self'); if(!loc.ok){ showErrorAndScroll(loc.msg); return false; }
+  if(!document.getElementById('selfConsent')?.checked){ showErrorAndScroll('Please consent to reminders.'); return false; }
+  if(!document.getElementById('selfEmergency')?.checked){ showErrorAndScroll('Please confirm you are not experiencing an emergency.'); return false; }
   return true;
 }
 function validateGuardianFlow(){
-  if (!document.getElementById('guardianConfirm18')?.checked){ showError('Please confirm you are a parent/guardian 18+.'); return false; }
+  if (!document.getElementById('guardianConfirm18')?.checked){ showErrorAndScroll('Please confirm you are a parent/guardian 18+.'); return false; }
   const gf=(document.getElementById('guardFirstName')?.value||'').trim();
   const gl=(document.getElementById('guardLastName')?.value||'').trim();
   const ge=(document.getElementById('guardEmail')?.value||'').trim();
   const gp=(document.getElementById('guardPhone')?.value||'').trim();
-  if(!gf||!gl){ showError('Please enter parent/guardian name.'); return false; }
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ge)){ showError('Please enter a valid parent/guardian email.'); return false; }
-  if(gp.replace(/\D/g,'').length<7){ showError('Please enter a valid parent/guardian phone.'); return false; }
+  if(!gf||!gl){ showErrorAndScroll('Please enter parent/guardian name.'); return false; }
+  if(ge && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ge)){ showErrorAndScroll('Please enter a valid parent/guardian email or leave it blank.'); return false; }
+  if(gp.replace(/\D/g,'').length<7){ showErrorAndScroll('Please enter a valid parent/guardian phone number.'); return false; }
   const people = collectIndividuals();
-  if(people.length===0){ showError('Please add at least one individual.'); return false; }
-  for (let i=0;i<people.length;i++){ if(!people[i].first||!people[i].last||!people[i].dob){ showError('Please complete each individual’s first name, last name, and DOB.'); return false; } }
-  applyVisitType('guardian'); if(!visitPlan.guardian.type){ showError('Please select First-Time or Follow-Up.'); return false; }
-  if(!selectedSlot.guardian){ showError('Please choose an available time.'); return false; }
-  const loc=getCheckedLocation('guardian'); if(!loc.ok){ showError(loc.msg); return false; }
-  if(!document.getElementById('guardConsent')?.checked){ showError('Please consent to reminders.'); return false; }
-  if(!document.getElementById('guardEmergency')?.checked){ showError('Please confirm you are not experiencing an emergency.'); return false; }
+  if(people.length===0){ showErrorAndScroll('Please add at least one individual.'); return false; }
+  for (let i=0;i<people.length;i++){ if(!people[i].first||!people[i].last||!people[i].dob){ showErrorAndScroll('Please complete each individual’s first name, last name, and DOB.'); return false; } }
+  applyVisitType('guardian'); if(!visitPlan.guardian.type){ showErrorAndScroll('Please select First-Time or Follow-Up.'); return false; }
+  if(!selectedSlot.guardian || !selectedSlot.guardian.block_start_iso){ showErrorAndScroll('Please choose an available time.'); return false; } // Checks NEW slot format
+  const loc=getCheckedLocation('guardian'); if(!loc.ok){ showErrorAndScroll(loc.msg); return false; }
+  if(!document.getElementById('guardConsent')?.checked){ showErrorAndScroll('Please consent to reminders.'); return false; }
+  if(!document.getElementById('guardEmergency')?.checked){ showErrorAndScroll('Please confirm you are not experiencing an emergency.'); return false; }
   return true;
 }
 
@@ -1100,7 +1182,6 @@ function friendlyStartFromSelected(flow){
   const mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return d+' '+mons[m-1]+' '+y+', '+t12fmt(s.hour, s.minute);
 }
-// REPLACE your existing showConfirmation with this version
 function showConfirmation(opts){
   var card = document.getElementById('confirmationCard'); if (!card) return;
 
@@ -1112,10 +1193,8 @@ function showConfirmation(opts){
   if (confWhen) confWhen.textContent = opts.whenText || '—';
   if (confLocation) confLocation.textContent = opts.locationText || referralAddressText();
   if (confNote) confNote.textContent = 'Please check in at the front desk when you arrive.';
-  // Keep Outlook hidden (if you later want it, just set href and display)
   if (outlookLink){ outlookLink.removeAttribute('href'); outlookLink.style.display = 'none'; }
 
-  // ⬇️ Add/ensure "Book another" button
   var actions = card.querySelector('.confirm-actions');
   if (actions){
     var existing = document.getElementById('bookAnotherBtn');
@@ -1126,10 +1205,18 @@ function showConfirmation(opts){
       btn.className = 'btn btn-primary';
       btn.textContent = 'Book another appointment';
       btn.addEventListener('click', function(){
-        // Reset the form and hide the confirmation so user can start over
+        var fg = document.querySelector('.flow-grid');
+        var bg = document.querySelector('.button-group');
+        if (fg) fg.style.display = '';
+        if (bg) bg.style.display = '';
+
         clearAll(false);
+        
+        if (typeof updateFlowVisibility === 'function') {
+            updateFlowVisibility();
+        }
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        // Put focus on the first flow toggle for convenience
         (document.getElementById('selfConfirm18') || document.getElementById('guardianConfirm18'))?.focus?.();
       });
       actions.prepend(btn);
@@ -1150,20 +1237,21 @@ async function submitSelf(){
   const phone=(document.getElementById('selfPhone')?.value||'').trim();
   const dob  =(document.getElementById('selfDob')?.value||'').trim();
   const loc  = getCheckedLocation('self').value;
-  const calendarSite = getPhysicianSiteKeyFromLocationText(loc);
 
   try{ localStorage.setItem('sw_client_name', first+' '+last); localStorage.setItem('sw_client_phone', phone); }catch{}
 
   applyVisitType('self');
+  // Read from the 'self' slot structure
   const st=selectedSlot.self.start, dur=visitPlan.self.durationMin;
   const endHM = addMinutesToHM(st.hour, st.minute, dur);
   const startDT = ymdhms(selectedSlot.self.y, selectedSlot.self.m, selectedSlot.self.d, st.hour, st.minute);
   const endDT   = ymdhms(selectedSlot.self.y, selectedSlot.self.m, selectedSlot.self.d, endHM.hour, endHM.minute);
+  const friendlyWhen = friendlyStartFromSelected('self');
 
   const subject = 'Physician visit – ' + (visitPlan.self.type==='first' ? 'First-Time (60m)' : 'Follow-Up (30m)');
   const body = [
     'In-office physician visit for '+first+' '+last+'.',
-    'When: '+friendlyStartFromSelected('self')+' ('+CONFIG.TIMEZONE+')',
+    'When: '+friendlyWhen+' ('+CONFIG.TIMEZONE+')',
     'Where: '+loc,
     'Check-in: Please check in at the front desk when you arrive.',
     'Contact: '+phone,
@@ -1177,14 +1265,19 @@ async function submitSelf(){
     end:   { dateTime:endDT,   timeZone: CONFIG.TIMEZONE },
     expectedDate: selectedSlot.self.y+'-'+p2(selectedSlot.self.m)+'-'+p2(selectedSlot.self.d),
     location: { displayName: 'In-Office — '+loc },
-    attendees: [{ address: email, name: first+' '+last, type:'required' }],
+    attendees: [],
     allowNewTimeProposals: true,
     transactionId: generateUUID(),
     visitType: visitPlan.self.type,
     dob, over18:'yes', guardian:null, household:null,
+    // Send formKind and calendarSite for backend routing
     formKind: 'physician',
-    calendarSite // 'Augusta' | 'Macon' | null
+    calendarSite: loc.toLowerCase().includes('augusta') ? 'Augusta' : 'Macon'
   };
+
+  if (email) {
+      payload.attendees.push({ address: email, name: first+' '+last, type:'required' });
+  }
 
   const resp = await fetch(withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY), {
     method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(payload)
@@ -1192,38 +1285,45 @@ async function submitSelf(){
   if(!resp.ok){ let t=''; try{ t=await resp.text(); }catch{} throw new Error('Failed to book ('+resp.status+') '+t); }
   const result = await resp.json();
   showSuccess();
-  showConfirmation({ whenText: friendlyStartFromSelected('self'), locationText: loc, webLink: result?.webLink||null });
-  // Clear the form but keep confirmation visible
+  showConfirmation({ whenText: friendlyWhen, locationText: loc, webLink: result?.webLink||null });
+  
+  document.querySelector('.flow-grid').style.display = 'none';
+  document.querySelector('.button-group').style.display = 'none';
   clearAll(true);
 }
 
-function getPhysicianSiteKeyFromLocationText(locText){
-  const s = (locText || '').toLowerCase();
-  if (s.includes('augusta')) return 'Augusta';
-  if (s.includes('macon')) return 'Macon';
-  return null;
-}
-
-
+// MODIFIED: This function now uses the new consecutive slot format
 async function submitGuardian(){
   const gf=(document.getElementById('guardFirstName')?.value||'').trim();
   const gl=(document.getElementById('guardLastName')?.value||'').trim();
   const ge=(document.getElementById('guardEmail')?.value||'').trim();
   const gp=(document.getElementById('guardPhone')?.value||'').trim();
   const loc = getCheckedLocation('guardian').value;
-  const calendarSite = getPhysicianSiteKeyFromLocationText(loc);
 
   const people = collectIndividuals();
-  applyVisitType('guardian');
-  const st=selectedSlot.guardian.start, dur=visitPlan.guardian.durationMin;
-  const endHM = addMinutesToHM(st.hour, st.minute, dur);
-  const startDT = ymdhms(selectedSlot.guardian.y, selectedSlot.guardian.m, selectedSlot.guardian.d, st.hour, st.minute);
-  const endDT   = ymdhms(selectedSlot.guardian.y, selectedSlot.guardian.m, selectedSlot.guardian.d, endHM.hour, endHM.minute);
+  applyVisitType('guardian'); // Still used for visitType and to get base duration
+  
+  // MODIFIED: Read block start/end directly from the new slot object
+  if (!selectedSlot.guardian || !selectedSlot.guardian.block_start_iso) {
+      showErrorAndScroll('Please select an available time slot.');
+      return;
+  }
+  
+  const startISO = selectedSlot.guardian.block_start_iso;
+  const endISO = selectedSlot.guardian.block_end_iso;
+  const timeZone = selectedSlot.guardian.timeZone;
+  const friendlyWhen = selectedSlot.guardian.friendlyText;
+  
+  // Calculate total duration from the selected block
+  const dur = (new Date(endISO) - new Date(startISO)) / (1000 * 60);
 
-  const subject = 'Physician visit – ' + (visitPlan.guardian.type==='first' ? 'First-Time (60m)' : 'Follow-Up (30m)') + ' (Household)';
+  const expectedDate = startISO.substring(0, 10); // "2025-11-05"
+
+  const subject = 'Physician visit – ' + (visitPlan.guardian.type==='first' ? 'First-Time' : 'Follow-Up') + ` (${people.length} ${people.length > 1 ? 'people' : 'person'})`;
   const body = [
     'Household physician visit booked by '+gf+' '+gl+'.',
-    'When: '+friendlyStartFromSelected('guardian')+' ('+CONFIG.TIMEZONE+')',
+    'When: '+ friendlyWhen + ` (${timeZone})`, // Use friendly text
+    'Total Duration: ' + dur + ' minutes',
     'Where: '+loc,
     'Check-in: Please check in at the front desk when you arrive.',
     'Contact: '+gp,
@@ -1234,27 +1334,33 @@ async function submitGuardian(){
 
   const household = {
     hasSiblings: true,
-    householdBlockMinutes: dur,
+    householdBlockMinutes: dur, // Use the new total duration
     under18Guardian: { sameAsMain: true, details: { name: gf+' '+gl, phone: gp, email: ge } },
     siblings: people.map(function(p){ return { name:p.first+' '+p.last, dob:p.dob, under18:p.under18, needsAssessment:true, guardianSame:true, guardian:{ name:gf+' '+gl, phone:gp, email:ge } }; })
   };
-
+  
+  // MODIFIED: Build payload with new start/end format
   const payload = {
     subject, body,
-    start: { dateTime:startDT, timeZone: CONFIG.TIMEZONE },
-    end:   { dateTime:endDT,   timeZone: CONFIG.TIMEZONE },
-    expectedDate: selectedSlot.guardian.y+'-'+p2(selectedSlot.guardian.m)+'-'+p2(selectedSlot.guardian.d),
+    start: { dateTime: startISO.substring(0, 19), timeZone: timeZone }, // "2025-11-05T09:00:00"
+    end:   { dateTime: endISO.substring(0, 19),   timeZone: timeZone }, // "2025-11-05T12:00:00"
+    expectedDate: expectedDate,
     location: { displayName: 'In-Office — '+loc },
-    attendees: [{ address: ge, name: gf+' '+gl, type:'required' }],
+    attendees: [],
     allowNewTimeProposals: true,
     transactionId: generateUUID(),
     visitType: visitPlan.guardian.type,
     over18:'yes',
     guardian: { name: gf+' '+gl, phone: gp, email: ge },
     household,
+    // Send formKind and calendarSite for backend routing
     formKind: 'physician',
-    calendarSite
+    calendarSite: loc.toLowerCase().includes('augusta') ? 'Augusta' : 'Macon'
   };
+
+  if (ge) {
+      payload.attendees.push({ address: ge, name: gf+' '+gl, type:'required' });
+  }
 
   const resp = await fetch(withKey(CONFIG.BOOK_APPOINTMENT_URL, CONFIG.BOOK_APPOINTMENT_KEY), {
     method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(payload)
@@ -1262,10 +1368,15 @@ async function submitGuardian(){
   if(!resp.ok){ let t=''; try{ t=await resp.text(); }catch{} throw new Error('Failed to book ('+resp.status+') '+t); }
   const result = await resp.json();
   showSuccess();
-  showConfirmation({ whenText: friendlyStartFromSelected('guardian'), locationText: loc, webLink: result?.webLink||null });
-  // Clear the form but keep confirmation visible
+  // MODIFIED: Use friendlyWhen text for confirmation
+  showConfirmation({ whenText: friendlyWhen, locationText: loc, webLink: result?.webLink||null });
+  
+  document.querySelector('.flow-grid').style.display = 'none';
+  document.querySelector('.button-group').style.display = 'none';
+  
   clearAll(true);
 }
+
 
 /* ------------------------- Submit handler -------------------------- */
 async function handleSubmit(e){
@@ -1273,8 +1384,8 @@ async function handleSubmit(e){
   hideMessages();
   const selfC = document.getElementById('selfConfirm18')?.checked || false;
   const guardC = document.getElementById('guardianConfirm18')?.checked || false;
-  if (!selfC && !guardC){ showError('Please choose a flow: Individual (18+) or Parent/Guardian (18+).'); return; }
-  if (selfC && guardC){ showError('Please use one flow at a time. Uncheck one of the confirmations.'); return; }
+  if (!selfC && !guardC){ showErrorAndScroll('Please choose a flow: Individual (18+) or Parent/Guardian (18+).'); return; }
+  if (selfC && guardC){ showErrorAndScroll('Please use one flow at a time. Uncheck one of the confirmations.'); return; }
 
   const btn=document.getElementById('submitBtn');
   const spin=document.getElementById('submitSpinner');
@@ -1284,7 +1395,7 @@ async function handleSubmit(e){
   try{
     if (selfC){ if (!validateSelfFlow()) return; await submitSelf(); }
     else { if (!validateGuardianFlow()) return; await submitGuardian(); }
-  }catch(err){ console.error(err); showError('There was an error booking your appointment. Please try again or call the office.'); }
+  }catch(err){ console.error(err); showErrorAndScroll('There was an error booking your appointment. Please try again or call the office.'); }
   finally{ if(btn) btn.disabled=false; if(spin) spin.classList?.add('hidden'); overlay(false); }
 }
 
@@ -1311,7 +1422,6 @@ function clearAll(keepConfirmation){
   const card=document.getElementById('confirmationCard');
   if(card && !keepConfirmation) card.classList.remove('visible');
 
-  // reset individuals to one blank card
   const list=document.getElementById('individualsList');
   if(list){
     list.innerHTML='';
@@ -1339,48 +1449,145 @@ document.addEventListener('DOMContentLoaded', function(){
   formatPhoneInput(document.getElementById('selfPhone'));
   formatPhoneInput(document.getElementById('guardPhone'));
 
-  // Flow toggles mutually exclusive
-  const selfC=document.getElementById('selfConfirm18');
-  const guardC=document.getElementById('guardianConfirm18');
-  if(selfC&&guardC){
-    selfC.addEventListener('change', function(){ if(selfC.checked) guardC.checked=false; });
-    guardC.addEventListener('change', function(){ if(guardC.checked) selfC.checked=false; });
+  const selfC = document.getElementById('selfConfirm18');
+  const guardC = document.getElementById('guardianConfirm18');
+  const flowSelfEl = document.getElementById('flowSelf');
+  const flowGuardianEl = document.getElementById('flowGuardian');
+  
+  updateFlowVisibility = function() {
+      const selfChecked = selfC.checked;
+      const guardChecked = guardC.checked;
+      const grid = document.querySelector('.flow-grid');
+
+      if (selfChecked) {
+          flowSelfEl.classList.add('flow-active');
+          flowGuardianEl.classList.remove('flow-active');
+          flowGuardianEl.style.display = 'none';
+          flowSelfEl.style.display = 'block';
+          if (grid) {
+              grid.style.display = 'flex';
+              grid.style.justifyContent = 'center';
+          }
+      } else if (guardChecked) {
+          flowGuardianEl.classList.add('flow-active');
+          flowSelfEl.classList.remove('flow-active');
+          flowSelfEl.style.display = 'none';
+          flowGuardianEl.style.display = 'block';
+          if (grid) {
+              grid.style.display = 'flex';
+              grid.style.justifyContent = 'center';
+          }
+      } else {
+          flowSelfEl.classList.remove('flow-active');
+          flowGuardianEl.classList.remove('flow-active');
+          flowSelfEl.style.display = 'block';
+          flowGuardianEl.style.display = 'block';
+          if (grid) {
+              grid.style.display = 'grid';
+              grid.style.justifyContent = '';
+          }
+      }
   }
 
-  // Locations act like radios per flow
+  if (selfC && guardC && flowSelfEl && flowGuardianEl) {
+      selfC.addEventListener('change', function() {
+          if (selfC.checked) guardC.checked = false;
+          updateFlowVisibility();
+      });
+      guardC.addEventListener('change', function() {
+          if (guardC.checked) selfC.checked = false;
+          updateFlowVisibility();
+      });
+      
+      updateFlowVisibility();
+  }
+
   makeCheckboxesMutuallyExclusive('selfLocAugusta','selfLocMacon');
   makeCheckboxesMutuallyExclusive('guardLocAugusta','guardLocMacon');
 
-  // Visit type radios -> re-render if slots are loaded
   document.querySelectorAll('input[name="firstTimeSelf"]').forEach(function(r){
     r.addEventListener('change', function(){ applyVisitType('self'); if(slotsCache) displaySlotsForFlow('self', slotsCache); });
   });
+  // MODIFIED: This just applies the type. The slot loading button will read it.
   document.querySelectorAll('input[name="firstTimeGuardian"]').forEach(function(r){
-    r.addEventListener('change', function(){ applyVisitType('guardian'); if(slotsCache) displaySlotsForFlow('guardian', slotsCache); });
+    r.addEventListener('change', function(){ 
+        applyVisitType('guardian'); 
+        // Clear old slots if visit type changes, forcing user to reload
+        const tsG=document.getElementById('timeSlotsGuardian'); 
+        if(tsG) tsG.innerHTML='<p style="color: #a94442;">Visit type changed. Please click "Load Available Times" again.</p>';
+        selectedSlot.guardian = null;
+    });
   });
 
-  // Load slots per flow
+  // Load slots for Self flow (Original)
   document.getElementById('loadSlotsSelfBtn')?.addEventListener('click', async function(){
-  applyVisitType('self'); if(!visitPlan.self.type){ showError('Please select whether this is your first visit or a follow-up.'); return; }
-  const loc = getCheckedLocation('self'); if(!loc.ok){ showError(loc.msg); return; }
-  const site = getPhysicianSiteKeyFromLocationText(loc.value);
-  const slots = await ensureSlots({ formKind: 'physician', calendarSite: site });
-  displaySlotsForFlow('self', slots);
-});
+    applyVisitType('self'); if(!visitPlan.self.type){ showErrorAndScroll('Please select whether this is your first visit or a follow-up.'); return; }
+    const slots = await ensureSlots(); displaySlotsForFlow('self', slots);
+  });
+  
+  // MODIFIED: Load CONSECUTIVE slots for Guardian flow
   document.getElementById('loadSlotsGuardianBtn')?.addEventListener('click', async function(){
-  applyVisitType('guardian'); if(!visitPlan.guardian.type){ showError('Please select whether this is your first visit or a follow-up.'); return; }
-  const loc = getCheckedLocation('guardian'); if(!loc.ok){ showError(loc.msg); return; }
-  const site = getPhysicianSiteKeyFromLocationText(loc.value);
-  const slots = await ensureSlots({ formKind: 'physician', calendarSite: site });
-  displaySlotsForFlow('guardian', slots);
-});
+    // 1. Get duration per person from radio buttons
+    applyVisitType('guardian'); 
+    if(!visitPlan.guardian.type){ showErrorAndScroll('Please select "First time" (60 min) or "Follow-up" (30 min) per person.'); return; }
+    const slotDurationMinutes = visitPlan.guardian.durationMin; // 30 or 60
+
+    // 2. Get number of individuals
+    const individuals = collectIndividuals();
+    if (individuals.length === 0) { showErrorAndScroll('Please add at least one individual.'); return; }
+    // Check for empty fields in individuals
+    for (let i=0;i<individuals.length;i++){ if(!individuals[i].first||!individuals[i].last||!individuals[i].dob){ showErrorAndScroll('Please complete each individual’s first name, last name, and DOB.'); return; } }
+    const numIndividuals = individuals.length;
+
+    // 3. Get location (for calendar selection on backend)
+    const loc = getCheckedLocation('guardian');
+    if (!loc.ok) { showErrorAndScroll(loc.msg); return; }
+    const siteKey = loc.value.toLowerCase().includes('augusta') ? 'Augusta' : 'Macon';
+
+    const container = document.getElementById('timeSlotsGuardian');
+    if (container) container.innerHTML = `<p>Loading slots for ${numIndividuals} ${numIndividuals > 1 ? 'people' : 'person'} (${numIndividuals * slotDurationMinutes} mins total)...</p>`;
+    overlay(true, 'Loading available times…');
+
+    // 4. Build URL for new endpoint
+    const params = new URLSearchParams({
+        individuals: numIndividuals,
+        slotDurationMinutes: slotDurationMinutes,
+        formKind: 'physician', // Hard-code as this is the physician form
+        calendarSite: siteKey
+    });
+    // Use withKey for the base URL, then append other params
+    const baseUrl = withKey(CONFIG.GET_CONSECUTIVE_SLOTS_URL, CONFIG.GET_SLOTS_KEY);
+    const url = baseUrl + (baseUrl.includes('?') ? '&' : '?') + params.toString();
+
+    try {
+        const resp = await fetch(url, { method:'GET', headers:{'Accept':'application/json'} });
+        const data = await resp.json();
+        if (!resp.ok || data.ok === false) throw new Error(data.details || data.error || 'Failed to load slots');
+
+        // 5. Call NEW display function
+        displayConsecutiveSlots('guardian', data);
+
+    } catch(e) { 
+        console.error(e); 
+        showErrorAndScroll('Failed to load available appointment times. Please try again or call the office.'); 
+        if (container) container.innerHTML = '<p style="color: #a94442;">Error loading slots. Please try again.</p>';
+    } finally { 
+        overlay(false); 
+    }
+  });
+
 
   // Add +Individuals
   document.getElementById('addIndividualBtn')?.addEventListener('click', addIndividualCard);
 
   // Submit & Clear
   document.getElementById('physForm')?.addEventListener('submit', handleSubmit);
-  document.getElementById('clearFormBtn')?.addEventListener('click', function(){ clearAll(false); });
+  document.getElementById('clearFormBtn')?.addEventListener('click', function(){ 
+      clearAll(false); 
+      if (typeof updateFlowVisibility === 'function') {
+          updateFlowVisibility();
+      }
+  });
 
   // Prefill convenience
   try{
@@ -1395,7 +1602,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }catch{}
 });
 </script>
-
 
 </body>
 
